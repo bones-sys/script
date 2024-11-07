@@ -70,8 +70,6 @@ set LAUNCHER_FOLDER=%USERPROFILE%\ami_launcher
 set CHROME_HKEY=HKLM\SOFTWARE\Policies\Google\Chrome\URLWhitelist
 set LAUNCHER_HKEY=HKCR\ami
 set LAUNCH_LAUNCHER="\"%LAUNCHER_FOLDER%\ami_launcher.exe\" \"%%1\""
-@REM CHANGE: replace machine
-set SHOTGUN_HKEY=HKCR\shotgun
 set OPLINK_HKEY=HKCR\oplink
 set LAUNCH_OPLINK="\"%LAUNCHER_FOLDER%\oplink.exe\" \"%%1\""
 
@@ -112,11 +110,6 @@ if exist %REMOTE_FOLDER% (
     reg add %LAUNCHER_HKEY% /t "REG_SZ" /d "URL:ami" /f
     reg add %LAUNCHER_HKEY% /v "URL Protocol" /t "REG_SZ" /d "" /f
     reg add %LAUNCHER_HKEY%\shell\open\command /t "REG_SZ" /d %LAUNCH_LAUNCHER% /f
-
-    @REM CHANGE: replace machine
-    reg add %SHOTGUN_HKEY% /t "REG_SZ" /d "URL:shotgun" /f
-    reg add %SHOTGUN_HKEY% /v "URL Protocol" /t "REG_SZ" /d "" /f
-    reg add %SHOTGUN_HKEY%\shell\open\command /t "REG_SZ" /d %LAUNCH_LAUNCHER% /f
 
     reg add %OPLINK_HKEY% /t "REG_SZ" /d "URL:oplink" /f
     reg add %OPLINK_HKEY% /v "URL Protocol" /t "REG_SZ" /d "" /f
