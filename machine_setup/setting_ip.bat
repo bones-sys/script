@@ -1,26 +1,44 @@
 @echo off
-REM ãƒ›ã‚¹ãƒˆåã‚’å–å¾—
+
+for /f "tokens=3 delims=\\ " %%i in ('whoami /groups^|find "Mandatory"') do set LEVEL=%%i
+if NOT "%LEVEL%"=="High" (
+    powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -Command "Start-Process %~f0 -Verb runas"
+    exit
+)
+
+REM ƒzƒXƒg–¼‚ðŽæ“¾
 for /f "tokens=2 delims=_" %%A in ('hostname') do set HOST_SUFFIX=%%A
 
-REM æ•°å€¤éƒ¨åˆ†ã«100ã‚’åŠ ç®—
+REM ”’l•”•ª‚É100‚ð‰ÁŽZiƒfƒtƒHƒ‹ƒg’l‚ðÝ’èj
+if not defined HOST_SUFFIX set HOST_SUFFIX=0
+
+for /f "tokens=* delims=0" %%B in ("%HOST_SUFFIX%") do set HOST_SUFFIX=%%B
 set /a IP_SUFFIX=100 + %HOST_SUFFIX%
 
-REM IPã‚¢ãƒ‰ãƒ¬ã‚¹ã‚’å›ºå®šã™ã‚‹è¨­å®š
-REM å¿…è¦ã«å¿œã˜ã¦ä»¥ä¸‹ã®å€¤ã‚’å¤‰æ›´ã—ã¦ãã ã•ã„
-REM ãƒãƒƒãƒˆãƒ¯ãƒ¼ã‚¯ã‚¢ãƒ€ãƒ—ã‚¿ãƒ¼åï¼ˆä¾‹: "Wi-Fi", "Ethernet"ï¼‰
-set NETWORK_ADAPTER_NAME="Ethernet"
-REM å›ºå®šIPã‚¢ãƒ‰ãƒ¬ã‚¹ã®ãƒ—ãƒ¬ãƒ•ã‚£ãƒƒã‚¯ã‚¹
+REM ƒlƒbƒgƒ[ƒNƒAƒ_ƒvƒ^[–¼iŠÂ‹«‚É‰ž‚¶‚Ä•ÏXj
+set NETWORK_ADAPTER_NAME="ƒC[ƒTƒlƒbƒg"
+REM ŒÅ’èIPƒAƒhƒŒƒX‚ÌƒvƒŒƒtƒBƒbƒNƒX
 set IP_PREFIX=192.168.33
-REM ã‚µãƒ–ãƒãƒƒãƒˆãƒžã‚¹ã‚¯
+REM ƒTƒuƒlƒbƒgƒ}ƒXƒN
 set SUBNET_MASK=255.255.255.0
-REM ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã‚²ãƒ¼ãƒˆã‚¦ã‚§ã‚¤
+REM ƒfƒtƒHƒ‹ƒgƒQ[ƒgƒEƒFƒC
 set GATEWAY=192.168.33.1
-REM å„ªå…ˆDNSã‚µãƒ¼ãƒãƒ¼
-set DNS=8.8.8.8
+REM —DæDNSƒT[ƒo[
+set DNS=192.168.30.50
+REM ‘ã‘ÖDNSƒT[ƒo[
+set ALT_DNS=192.168.30.70
 
-REM IPã‚¢ãƒ‰ãƒ¬ã‚¹ã®æœ«å°¾ã‚’ãƒ›ã‚¹ãƒˆåã‹ã‚‰è¨­å®š
+REM IPƒAƒhƒŒƒX‚Ì––”ö‚ðƒzƒXƒg–¼‚©‚çÝ’è
 set IP_ADDRESS=%IP_PREFIX%.%IP_SUFFIX%
 
-REM ãƒãƒƒãƒˆãƒ¯ãƒ¼ã‚¯è¨­å®šã‚’å¤‰æ›´
-echo è¨­å®šä¸­: %IP_ADDRESS%
+REM ƒlƒbƒgƒ[ƒNÝ’è‚ð•ÏX
+echo Ý’è’†: %IP_ADDRESS%
 netsh interface ip set address name=%NETWORK_ADAPTER_NAME% static %IP_ADDRESS% %SUBNET_MASK% %GATEWAY%
+netsh interface ip set dns name=%NETWORK_ADAPTER_NAME% static %DNS%
+netsh interface ip add dns name=%NETWORK_ADAPTER_NAME% %ALT_DNS% index=2
+
+REM Š®—¹ƒƒbƒZ[ƒW
+echo IPƒAƒhƒŒƒX‚ª %IP_ADDRESS% ‚ÉÝ’è‚³‚ê‚Ü‚µ‚½B
+
+
+pause
