@@ -61,11 +61,15 @@ if %errorlevel% neq 0 (
 popd
 
 REM --- (8) PotPlayer 用レジストリのインポート (あれば) ---
-if exist "madVRtoPotPlayerMini64.reg" (
+if exist "C:\madVR\madVRtoPotPlayerMini64.reg" (
     echo [INFO] madVRtoPotPlayerMini64.reg をインポートします...
-    reg import "madVRtoPotPlayerMini64.reg"
+    reg import "C:\madVR\madVRtoPotPlayerMini64.reg"
 ) else (
-    echo [WARN] madVRtoPotPlayerMini64.reg が見つからないためスキップします...
+    echo [WARN] C:\madVR\madVRtoPotPlayerMini64.reg が見つからないためスキップします...
+    echo [ERROR] C:\madVR\madVRtoPotPlayerMini64.reg が見つかりませんでした。ファイル構成を確認してください。
+    popd
+    pause
+    exit /b 1
 )
 
 echo.
