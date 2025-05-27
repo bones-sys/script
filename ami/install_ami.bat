@@ -128,6 +128,20 @@ echo --------------------------------------------
 :End
 
 echo.
+echo --------------------------------------------
+echo ショートカットを作成しています...
+for /f "usebackq delims=" %%D in (`powershell -NoProfile -Command "[Environment]::GetFolderPath('Desktop')"`) do set "DESKTOP=%%D"
+for /f "usebackq delims=" %%S in (`powershell -NoProfile -Command "[Environment]::GetFolderPath('Programs')"`) do set "STARTMENU=%%S"
+
+set "EXE=%USERPROFILE%\ami_launcher\ami_launcher.exe"
+
+powershell -Command "$wsh = New-Object -ComObject WScript.Shell; $s = $wsh.CreateShortcut('%DESKTOP%\ami_launcher.lnk'); $s.TargetPath = '%EXE%'; $s.Save()"
+
+powershell -Command "$wsh = New-Object -ComObject WScript.Shell; $s = $wsh.CreateShortcut('%STARTMENU%\ami_launcher.lnk'); $s.TargetPath = '%EXE%'; $s.Save()"
+echo --------------------------------------------
+
+
+echo.
 echo.
 echo バッチを終了します
 
