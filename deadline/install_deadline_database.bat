@@ -51,6 +51,8 @@ netsh advfirewall firewall add rule name="Deadline Worker" dir=in action=allow p
 
 reg delete HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /v DeadlineLauncher10 /f
 
+icacls "C:\Program Files\Thinkbox" /grant Users:(OI)(CI)M /T
+
 echo インストールは完了しました
 echo --------------------------------------------
 echo.
