@@ -5,6 +5,7 @@ if NOT "%LEVEL%"=="High" (
 powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -Command "Start-Process '%~f0' -Verb runas"
 exit
 )
+icacls "C:\Program Files\Thinkbox" /grant Users:(OI)(CI)M /T
 
 echo --------------------------------------------
 echo 高速スタートアップを無効にしています...
