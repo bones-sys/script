@@ -5,7 +5,6 @@ if NOT "%LEVEL%"=="High" (
 powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -Command "Start-Process '%~f0' -Verb runas"
 exit
 )
-icacls "C:\Program Files\Thinkbox" /grant Users:(OI)(CI)M /T
 
 set installer_source=\\bonehead-5\VFX01\__Deadline\__installer
 set client_destination=%USERPROFILE%\Desktop
@@ -51,6 +50,8 @@ set worker="C:\Program Files\Thinkbox\Deadline10\bin\deadlineworker.exe"
 netsh advfirewall firewall add rule name="Deadline Worker" dir=in action=allow program=%worker% enable=yes profile=any
 
 reg delete HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /v DeadlineLauncher10 /f
+
+icacls "C:\Program Files\Thinkbox" /grant Users:(OI)(CI)M /T
 
 echo インストールは完了しました
 echo --------------------------------------------

@@ -5,7 +5,6 @@ if NOT "%LEVEL%"=="High" (
 powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -Command "Start-Process '%~f0' -Verb runas"
 exit
 )
-icacls "C:\Program Files\Thinkbox" /grant Users:(OI)(CI)M /T
 
 echo --------------------------------------------
 echo 高速スタートアップを無効にしています...
@@ -107,6 +106,8 @@ netsh advfirewall firewall add rule name="Deadline Monitor" dir=in action=allow 
 
 set worker="C:\Program Files\Thinkbox\Deadline10\bin\deadlineworker.exe"
 netsh advfirewall firewall add rule name="Deadline Worker" dir=in action=allow program=%worker% enable=yes profile=any
+
+icacls "C:\Program Files\Thinkbox" /grant Users:(OI)(CI)M /T
 
 echo インストールは完了しました
 echo --------------------------------------------
