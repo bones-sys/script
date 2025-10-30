@@ -56,14 +56,6 @@ echo --------------------------------------------
 echo.
 echo.
 
-echo --------------------------------------------
-echo ネットワーク探索とファイルとプリンターの共有を有効化しています...
-powershell "Set-NetFirewallRule -DisplayGroup 'ネットワーク探索' -Profile Domain,Private -Enabled True"
-powershell "Set-NetFirewallRule -DisplayGroup 'ファイルとプリンターの共有' -Profile Domain -Enabled True"
-echo --------------------------------------------
-echo.
-echo.
-
 set REMOTE_FOLDER=\\bs00\Bon_system\ami_launcher
 set LAUNCHER_FOLDER=%USERPROFILE%\ami_launcher
 
