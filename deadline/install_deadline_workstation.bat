@@ -7,13 +7,6 @@ exit
 )
 
 echo --------------------------------------------
-echo 高速スタートアップを無効にしています...
-reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Power" /v HiberbootEnabled /t REG_DWORD /d 0 /f
-echo --------------------------------------------
-echo.
-echo.
-
-echo --------------------------------------------
 echo スリープを無効にしています...
 powercfg -x standby-timeout-ac 0
 echo --------------------------------------------
