@@ -56,6 +56,11 @@ echo --------------------------------------------
 echo.
 echo.
 
+if not exist "%USERPROFILE%\ami_version" (
+    mkdir "%USERPROFILE%\ami_version"
+    echo ami_versionÉtÉHÉãÉ_ÇçÏê¨ÇµÇ‹ÇµÇΩ
+)
+
 set REMOTE_FOLDER=\\bs00\Bon_system\ami_launcher
 set LAUNCHER_FOLDER=%USERPROFILE%\ami_launcher
 
