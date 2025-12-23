@@ -1,4 +1,5 @@
 @echo off
+chcp 65001 >nul
 
 for /f "tokens=3 delims=\ " %%i in ('whoami /groups^|find "Mandatory"') do set LEVEL=%%i
 if NOT "%LEVEL%"=="High" (
@@ -10,7 +11,7 @@ set VER=3.0.0
 title Install action-menu-item Ver %VER%
 
 echo --------------------------------------------
-echo slack‚ÌÝ’è‚ð•ÏX‚µ‚Ä‚¢‚Ü‚·...
+echo slackã®è¨­å®šã‚’å¤‰æ›´ã—ã¦ã„ã¾ã™...
 echo --------------------------------------------
 set "jsonFilePath=%USERPROFILE%\AppData\Roaming\Slack\storage\root-state.json"
 
@@ -28,29 +29,29 @@ if exist "%jsonFilePath%" (
     powershell -NoProfile -ExecutionPolicy RemoteSigned -Command "!PSCOMMAND!"
     endlocal
 ) else (
-    echo ƒtƒ@ƒCƒ‹‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ: %jsonFilePath%
+    echo ãƒ•ã‚¡ã‚¤ãƒ«ãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“: %jsonFilePath%
 )
 echo --------------------------------------------
 echo.
 echo.
 
 echo --------------------------------------------
-echo k¬•\Ž¦‚ÌƒLƒƒƒbƒVƒ…‚ð–³Œø‚ÉÝ’è‚µ‚Ä‚¢‚Ü‚·...
+echo ç¸®å°è¡¨ç¤ºã®ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã‚’ç„¡åŠ¹ã«è¨­å®šã—ã¦ã„ã¾ã™...
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Explorer" /v DisableThumbsDBOnNetworkFolders /t REG_DWORD /d 1 /f
 echo --------------------------------------------
 echo.
 echo.
 
 echo --------------------------------------------
-echo RDP‚ð—LŒø‚É‚µ‚Ä‚¢‚Ü‚·...
+echo RDPã‚’æœ‰åŠ¹ã«ã—ã¦ã„ã¾ã™...
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
-powershell "Enable-NetFirewallRule -DisplayGroup 'ƒŠƒ‚[ƒg ƒfƒXƒNƒgƒbƒv'"
+powershell "Enable-NetFirewallRule -DisplayGroup 'ãƒªãƒ¢ãƒ¼ãƒˆ ãƒ‡ã‚¹ã‚¯ãƒˆãƒƒãƒ—'"
 echo --------------------------------------------
 echo.
 echo.
 
 echo --------------------------------------------
-echo initialKeyboardIndicators‚ð2147483650‚É•ÏX‚µ‚ÄNUMLOCK‚ðƒIƒ“‚É‚µ‚Ä‚Ü‚·...
+echo initialKeyboardIndicatorsã‚’2147483650ã«å¤‰æ›´ã—ã¦NUMLOCKã‚’ã‚ªãƒ³ã«ã—ã¦ã¾ã™...
 reg add "HKEY_USERS\.DEFAULT\Control Panel\Keyboard" /v initialKeyboardIndicators /t REG_SZ /d 2147483650 /f
 echo --------------------------------------------
 echo.
@@ -58,7 +59,7 @@ echo.
 
 if not exist "%USERPROFILE%\ami_version" (
     mkdir "%USERPROFILE%\ami_version"
-    echo ami_versionƒtƒHƒ‹ƒ_‚ðì¬‚µ‚Ü‚µ‚½
+    echo ami_versionãƒ•ã‚©ãƒ«ãƒ€ã‚’ä½œæˆã—ã¾ã—ãŸ
 )
 
 set REMOTE_FOLDER=\\bs00\Bon_system\ami_launcher
@@ -70,12 +71,12 @@ set LAUNCH_LAUNCHER="\"%LAUNCHER_FOLDER%\ami_launcher.exe\" \"%%1\""
 set OPLINK_HKEY=HKCR\oplink
 set LAUNCH_OPLINK="\"%LAUNCHER_FOLDER%\oplink.exe\" \"%%1\""
 
-echo action-menu-item ƒCƒ“ƒXƒg[ƒ‹ Ver.%VER%
+echo action-menu-item ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ« Ver.%VER%
 echo.
 echo.
 
 echo --------------------------------------------
-echo ƒpƒX‚ð‹ºˆÐ‚Ì•ÛŒì‚Ì‘ÎÛ‚©‚çœŠO’†‚Å‚·...
+echo ãƒ‘ã‚¹ã‚’è„…å¨ã®ä¿è­·ã®å¯¾è±¡ã‹ã‚‰é™¤å¤–ä¸­ã§ã™...
 
 powershell Add-MpPreference -ExclusionPath %USERPROFILE%\ami_version
 powershell Add-MpPreference -ExclusionPath '%LAUNCHER_FOLDER%'
@@ -90,7 +91,7 @@ cd /d %~dp0
 
 echo.
 echo --------------------------------------------
-echo ƒCƒ“ƒXƒg[ƒ‹’†‚Å‚·...
+echo ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ä¸­ã§ã™...
 
 timeout /t 1 /nobreak >nul
 echo.
@@ -98,7 +99,7 @@ echo.
 if exist %REMOTE_FOLDER% (
     if exist %LAUNCHER_FOLDER% (
         rmdir /s /q %LAUNCHER_FOLDER%
-        echo Šù‘¶‚ÌƒtƒHƒ‹ƒ_‚ðíœ‚µ‚Ü‚µ‚½
+        echo æ—¢å­˜ã®ãƒ•ã‚©ãƒ«ãƒ€ã‚’å‰Šé™¤ã—ã¾ã—ãŸ
     )
 
     robocopy %REMOTE_FOLDER% %LAUNCHER_FOLDER% /s
@@ -113,20 +114,20 @@ if exist %REMOTE_FOLDER% (
     reg add %OPLINK_HKEY%\shell\open\command /t "REG_SZ" /d %LAUNCH_OPLINK% /f
 
     if not "%ERRORLEVEL%" == "0" (
-            echo ƒCƒ“ƒXƒg[ƒ‹’†‚ÉƒGƒ‰[‚ª”­¶‚µ‚Ü‚µ‚½
+            echo ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ä¸­ã«ã‚¨ãƒ©ãƒ¼ãŒç™ºç”Ÿã—ã¾ã—ãŸ
     ) else (
-        echo ƒCƒ“ƒXƒg[ƒ‹‚ÍŠ®—¹‚µ‚Ü‚µ‚½
+        echo ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã¯å®Œäº†ã—ã¾ã—ãŸ
         echo.
     )
 ) else (
-    echo %REMOTE_FOLDER% ‚ª‘¶Ý‚µ‚Ü‚¹‚ñ
+    echo %REMOTE_FOLDER% ãŒå­˜åœ¨ã—ã¾ã›ã‚“
 )
 echo --------------------------------------------
 :End
 
 echo.
 echo --------------------------------------------
-echo ƒVƒ‡[ƒgƒJƒbƒg‚ðì¬‚µ‚Ä‚¢‚Ü‚·...
+echo ã‚·ãƒ§ãƒ¼ãƒˆã‚«ãƒƒãƒˆã‚’ä½œæˆã—ã¦ã„ã¾ã™...
 for /f "usebackq delims=" %%D in (`powershell -NoProfile -Command "[Environment]::GetFolderPath('Desktop')"`) do set "DESKTOP=%%D"
 for /f "usebackq delims=" %%S in (`powershell -NoProfile -Command "[Environment]::GetFolderPath('Programs')"`) do set "STARTMENU=%%S"
 
@@ -140,6 +141,6 @@ echo --------------------------------------------
 
 echo.
 echo.
-echo ƒoƒbƒ`‚ðI—¹‚µ‚Ü‚·
+echo ãƒãƒƒãƒã‚’çµ‚äº†ã—ã¾ã™
 
 timeout /t 1 /nobreak >nul

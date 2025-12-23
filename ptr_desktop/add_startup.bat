@@ -1,4 +1,5 @@
 @echo off
+chcp 65001 >nul
 
 for /f "tokens=3 delims=\ " %%i in ('whoami /groups^|find "Mandatory"') do set LEVEL=%%i
 if NOT "%LEVEL%"=="High" (
@@ -7,7 +8,7 @@ exit
 )
 
 echo --------------------------------------------
-echo ƒXƒ^[ƒgƒAƒbƒv‚É“o˜^‚µ‚Ä‚¢‚Ü‚·...
+echo ã‚¹ã‚¿ãƒ¼ãƒˆã‚¢ãƒƒãƒ—ã«ç™»éŒ²ã—ã¦ã„ã¾ã™...
 set startupFolder=%AppData%\Microsoft\Windows\Start Menu\Programs\Startup
 set shortcutName=Shotgun.lnk
 set shortcutPath=%startupFolder%\%shortcutName%

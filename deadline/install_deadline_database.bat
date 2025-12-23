@@ -1,4 +1,5 @@
 @echo off
+chcp 65001 >nul
 
 for /f "tokens=3 delims=\ " %%i in ('whoami /groups^|find "Mandatory"') do set LEVEL=%%i
 if NOT "%LEVEL%"=="High" (
@@ -26,8 +27,8 @@ reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\S
 echo.
 echo.
 echo --------------------------------------------
-echo DeadlineClient‚ğƒCƒ“ƒXƒg[ƒ‹’†‚Å‚·...
-echo ƒCƒ“ƒXƒg[ƒ‹‚É‚Í”•ª‚©‚©‚éê‡‚ª‚ ‚è‚Ü‚·A‚±‚ÌƒEƒBƒ“ƒhƒE‚ğ•Â‚¶‚È‚¢‚Å‚­‚¾‚³‚¢
+echo DeadlineClientã‚’ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ä¸­ã§ã™...
+echo ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã«ã¯æ•°åˆ†ã‹ã‹ã‚‹å ´åˆãŒã‚ã‚Šã¾ã™ã€ã“ã®ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’é–‰ã˜ãªã„ã§ãã ã•ã„
 
 %client_destination%\DeadlineClient.exe --mode unattended --connectiontype Direct --repositorydir \\bonehead-5\VFX01\__Deadline --killprocesses true --slavestartup false --blockautoupdateoverride NotBlocked --launcherservice false
 
@@ -53,7 +54,7 @@ reg delete HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /v D
 
 icacls "C:\Program Files\Thinkbox" /grant Users:(OI)(CI)M /T
 
-echo ƒCƒ“ƒXƒg[ƒ‹‚ÍŠ®—¹‚µ‚Ü‚µ‚½
+echo ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã¯å®Œäº†ã—ã¾ã—ãŸ
 echo --------------------------------------------
 echo.
 echo.
