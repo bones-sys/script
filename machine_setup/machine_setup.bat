@@ -1,4 +1,5 @@
 @echo off
+chcp 65001 >nul
 
 for /f "tokens=3 delims=\ " %%i in ('whoami /groups^|find "Mandatory"') do set LEVEL=%%i
 if NOT "%LEVEL%"=="High" (
@@ -7,7 +8,7 @@ exit
 )
 
 echo --------------------------------------------
-echo slack‚Ìİ’è‚ğ•ÏX‚µ‚Ä‚¢‚Ü‚·...
+echo slackã®è¨­å®šã‚’å¤‰æ›´ã—ã¦ã„ã¾ã™...
 echo --------------------------------------------
 set "jsonFilePath=%USERPROFILE%\AppData\Roaming\Slack\storage\root-state.json"
 
@@ -25,38 +26,38 @@ if exist "%jsonFilePath%" (
     powershell -NoProfile -ExecutionPolicy RemoteSigned -Command "!PSCOMMAND!"
     endlocal
 ) else (
-    echo ƒtƒ@ƒCƒ‹‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ: %jsonFilePath%
+    echo ãƒ•ã‚¡ã‚¤ãƒ«ãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“: %jsonFilePath%
 )
 echo --------------------------------------------
 echo.
 echo.
 
 echo --------------------------------------------
-echo k¬•\¦‚ÌƒLƒƒƒbƒVƒ…‚ğ–³Œø‚Éİ’è‚µ‚Ä‚¢‚Ü‚·...
+echo ç¸®å°è¡¨ç¤ºã®ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã‚’ç„¡åŠ¹ã«è¨­å®šã—ã¦ã„ã¾ã™...
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Explorer" /v DisableThumbsDBOnNetworkFolders /t REG_DWORD /d 1 /f
 echo --------------------------------------------
 echo.
 echo.
 
 echo --------------------------------------------
-echo RDP‚ğ—LŒø‚É‚µ‚Ä‚¢‚Ü‚·...
+echo RDPã‚’æœ‰åŠ¹ã«ã—ã¦ã„ã¾ã™...
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
-powershell "Enable-NetFirewallRule -DisplayGroup 'ƒŠƒ‚[ƒg ƒfƒXƒNƒgƒbƒv'"
+powershell "Enable-NetFirewallRule -DisplayGroup 'ãƒªãƒ¢ãƒ¼ãƒˆ ãƒ‡ã‚¹ã‚¯ãƒˆãƒƒãƒ—'"
 echo --------------------------------------------
 echo.
 echo.
 
 echo --------------------------------------------
-echo initialKeyboardIndicators‚ğ2147483650‚É•ÏX‚µ‚ÄNUMLOCK‚ğƒIƒ“‚É‚µ‚Ä‚Ü‚·...
+echo initialKeyboardIndicatorsã‚’2147483650ã«å¤‰æ›´ã—ã¦NUMLOCKã‚’ã‚ªãƒ³ã«ã—ã¦ã¾ã™...
 reg add "HKEY_USERS\.DEFAULT\Control Panel\Keyboard" /v initialKeyboardIndicators /t REG_SZ /d 2147483650 /f
 echo --------------------------------------------
 echo.
 echo.
 
 echo --------------------------------------------
-echo ƒlƒbƒgƒ[ƒN’Tõ‚Æƒtƒ@ƒCƒ‹‚ÆƒvƒŠƒ“ƒ^[‚Ì‹¤—L‚ğ—LŒø‰»‚µ‚Ä‚¢‚Ü‚·...
-powershell "Set-NetFirewallRule -DisplayGroup 'ƒlƒbƒgƒ[ƒN’Tõ' -Profile Domain,Private -Enabled True"
-powershell "Set-NetFirewallRule -DisplayGroup 'ƒtƒ@ƒCƒ‹‚ÆƒvƒŠƒ“ƒ^[‚Ì‹¤—L' -Profile Domain -Enabled True"
+echo ãƒãƒƒãƒˆãƒ¯ãƒ¼ã‚¯æ¢ç´¢ã¨ãƒ•ã‚¡ã‚¤ãƒ«ã¨ãƒ—ãƒªãƒ³ã‚¿ãƒ¼ã®å…±æœ‰ã‚’æœ‰åŠ¹åŒ–ã—ã¦ã„ã¾ã™...
+powershell "Set-NetFirewallRule -DisplayGroup 'ãƒãƒƒãƒˆãƒ¯ãƒ¼ã‚¯æ¢ç´¢' -Profile Domain,Private -Enabled True"
+powershell "Set-NetFirewallRule -DisplayGroup 'ãƒ•ã‚¡ã‚¤ãƒ«ã¨ãƒ—ãƒªãƒ³ã‚¿ãƒ¼ã®å…±æœ‰' -Profile Domain -Enabled True"
 echo --------------------------------------------
 echo.
 echo.
