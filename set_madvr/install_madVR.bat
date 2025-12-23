@@ -1,78 +1,75 @@
 @echo off
+chcp 65001 >nul
 setlocal
 
-REM --- (1) ŠÇ—ŽÒŒ ŒÀ‚ÅŽÀs‚³‚ê‚Ä‚¢‚é‚©Šm”F ---
+REM --- (1) ç®¡ç†è€…æ¨©é™ã§å®Ÿè¡Œã•ã‚Œã¦ã„ã‚‹ã‹ç¢ºèª ---
 for /f "tokens=3 delims=\ " %%i in ('whoami /groups^|find "Mandatory"') do set LEVEL=%%i
 if NOT "%LEVEL%"=="High" (
     powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -Command "Start-Process '%~f0' -Verb runas"
     exit
 )
 
-REM --- (2) ‚±‚Ìƒoƒbƒ`ƒtƒ@ƒCƒ‹‚ª‚ ‚éƒtƒHƒ‹ƒ_‚ÉˆÚ“® ---
+REM --- (2) ã“ã®ãƒãƒƒãƒãƒ•ã‚¡ã‚¤ãƒ«ãŒã‚ã‚‹ãƒ•ã‚©ãƒ«ãƒ€ã«ç§»å‹• ---
 cd /d "%~dp0"
-echo [INFO] Œ»Ý‚Ìì‹ÆƒfƒBƒŒƒNƒgƒŠ: %cd%
+echo [INFO] ç¾åœ¨ã®ä½œæ¥­ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª: %cd%
 
-REM --- (3) ‹Œƒo[ƒWƒ‡ƒ“‚Ì madVR ‚ª‚ ‚ê‚ÎƒAƒ“ƒCƒ“ƒXƒg[ƒ‹ ---
+REM --- (3) æ—§ãƒãƒ¼ã‚¸ãƒ§ãƒ³ã® madVR ãŒã‚ã‚Œã°ã‚¢ãƒ³ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ« ---
 if exist "C:\madVR\uninstall.bat" (
-    echo [INFO] Šù‘¶‚Ì madVR ‚ðƒAƒ“ƒCƒ“ƒXƒg[ƒ‹‚µ‚Ü‚·...
-    pushd "C:\madVR"
-    call uninstall.bat
-    popd
+    echo [INFO] æ—¢å­˜ã® madVR ã‚’ã‚¢ãƒ³ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã—ã¾ã™...
+    call "C:\madVR\uninstall.bat"
 )
 
-REM --- (4) ‹Œƒo[ƒWƒ‡ƒ“‚ÌƒtƒHƒ‹ƒ_‚ðíœ ---
+REM --- (4) æ—§ãƒãƒ¼ã‚¸ãƒ§ãƒ³ã®ãƒ•ã‚©ãƒ«ãƒ€ã‚’å‰Šé™¤ ---
 if exist "C:\madVR" (
-    echo [INFO] Šù‘¶‚Ì "C:\madVR" ƒtƒHƒ‹ƒ_‚ðíœ‚µ‚Ü‚·...
+    echo [INFO] æ—¢å­˜ã® "C:\madVR" ãƒ•ã‚©ãƒ«ãƒ€ã‚’å‰Šé™¤ã—ã¾ã™...
     rd /s /q "C:\madVR"
 )
 
-REM --- (5) V‚µ‚¢ madVR ƒtƒHƒ‹ƒ_‚ª‚ ‚é‚©Šm”F ---
+REM --- (5) æ–°ã—ã„ madVR ãƒ•ã‚©ãƒ«ãƒ€ãŒã‚ã‚‹ã‹ç¢ºèª ---
 if not exist "madVR\" (
-    echo [ERROR] "madVR" ƒtƒHƒ‹ƒ_‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñBƒoƒbƒ`‚Æ“¯‚¶êŠ‚É’u‚¢‚Ä‚­‚¾‚³‚¢B
+    echo [ERROR] "madVR" ãƒ•ã‚©ãƒ«ãƒ€ãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“ã€‚ãƒãƒƒãƒã¨åŒã˜å ´æ‰€ã«ç½®ã„ã¦ãã ã•ã„ã€‚
     pause
     exit /b 1
 )
 if not exist "madVR\install.bat" (
-    echo [ERROR] "madVR" ƒtƒHƒ‹ƒ_“à‚É "install.bat" ‚ª‚ ‚è‚Ü‚¹‚ñB³‚µ‚­‰ð“€‚³‚ê‚Ä‚¢‚Ü‚·‚©H
+    echo [ERROR] "madVR" ãƒ•ã‚©ãƒ«ãƒ€å†…ã« "install.bat" ãŒã‚ã‚Šã¾ã›ã‚“ã€‚æ­£ã—ãè§£å‡ã•ã‚Œã¦ã„ã¾ã™ã‹ï¼Ÿ
     pause
     exit /b 1
 )
 
-REM --- (6) "madVR" ƒtƒHƒ‹ƒ_‚ð "C:\madVR" ‚ÉƒRƒs[ ---
-echo [INFO] "madVR" ƒtƒHƒ‹ƒ_‚ð "C:\madVR" ‚ÉƒRƒs[‚µ‚Ü‚·...
+REM --- (6) "madVR" ãƒ•ã‚©ãƒ«ãƒ€ã‚’ "C:\madVR" ã«ã‚³ãƒ”ãƒ¼ ---
+echo [INFO] "madVR" ãƒ•ã‚©ãƒ«ãƒ€ã‚’ "C:\madVR" ã«ã‚³ãƒ”ãƒ¼ã—ã¾ã™...
 md "C:\madVR" >nul 2>&1
 xcopy /E /H /R /Y "madVR" "C:\madVR" >nul
 if %errorlevel% neq 0 (
-    echo [ERROR] ƒRƒs[‚ÉŽ¸”s‚µ‚Ü‚µ‚½BƒtƒHƒ‹ƒ_‚âƒAƒNƒZƒXŒ ‚ðŠm”F‚µ‚Ä‚­‚¾‚³‚¢B
+    echo [ERROR] ã‚³ãƒ”ãƒ¼ã«å¤±æ•—ã—ã¾ã—ãŸã€‚ãƒ•ã‚©ãƒ«ãƒ€ã‚„ã‚¢ã‚¯ã‚»ã‚¹æ¨©ã‚’ç¢ºèªã—ã¦ãã ã•ã„ã€‚
     pause
     exit /b 1
 )
 
-REM --- (7) V‚µ‚¢ madVR ‚ðƒCƒ“ƒXƒg[ƒ‹ (install.bat) ---
-echo [INFO] install.bat ‚ðŽÀs‚µ‚Ü‚·...
-pushd "C:\madVR"
-call install.bat
+REM --- (7) æ–°ã—ã„ madVR ã‚’ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ« (install.bat) ---
+echo [INFO] æ—¢å­˜ã® madVR ã®è¨­å®šã‚’åˆæœŸåŒ–ã—ã¾ã™...
+call "C:\madVR\restore default settings.bat"
+echo [INFO] install.bat ã‚’å®Ÿè¡Œã—ã¾ã™...
+call "C:\madVR\install.bat"
 if %errorlevel% neq 0 (
-    echo [ERROR] install.bat ŽÀsŽž‚ÉƒGƒ‰[‚ª”­¶‚µ‚Ü‚µ‚½BŠÇ—ŽÒŒ ŒÀ‚âƒtƒ@ƒCƒ‹\¬‚ðŠm”F‚µ‚Ä‚­‚¾‚³‚¢B
-    popd
+    echo [ERROR] install.bat å®Ÿè¡Œæ™‚ã«ã‚¨ãƒ©ãƒ¼ãŒç™ºç”Ÿã—ã¾ã—ãŸã€‚ç®¡ç†è€…æ¨©é™ã‚„ãƒ•ã‚¡ã‚¤ãƒ«æ§‹æˆã‚’ç¢ºèªã—ã¦ãã ã•ã„ã€‚
     pause
     exit /b 1
 )
-popd
 
-REM --- (8) PotPlayer —pƒŒƒWƒXƒgƒŠ‚ÌƒCƒ“ƒ|[ƒg (‚ ‚ê‚Î) ---
+REM --- (8) PotPlayer ç”¨ãƒ¬ã‚¸ã‚¹ãƒˆãƒªã®ã‚¤ãƒ³ãƒãƒ¼ãƒˆ (ã‚ã‚Œã°) ---
 if exist "C:\madVR\madVRtoPotPlayerMini64.reg" (
-    echo [INFO] madVRtoPotPlayerMini64.reg ‚ðƒCƒ“ƒ|[ƒg‚µ‚Ü‚·...
+    echo [INFO] madVRtoPotPlayerMini64.reg ã‚’ã‚¤ãƒ³ãƒãƒ¼ãƒˆã—ã¾ã™...
     reg import "C:\madVR\madVRtoPotPlayerMini64.reg"
 ) else (
-    echo [WARN] C:\madVR\madVRtoPotPlayerMini64.reg ‚ªŒ©‚Â‚©‚ç‚È‚¢‚½‚ßƒXƒLƒbƒv‚µ‚Ü‚·...
-    echo [ERROR] C:\madVR\madVRtoPotPlayerMini64.reg ‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ‚Å‚µ‚½Bƒtƒ@ƒCƒ‹\¬‚ðŠm”F‚µ‚Ä‚­‚¾‚³‚¢B
-    popd
+    echo [WARN] C:\madVR\madVRtoPotPlayerMini64.reg ãŒè¦‹ã¤ã‹ã‚‰ãªã„ãŸã‚ã‚¹ã‚­ãƒƒãƒ—ã—ã¾ã™...
+    echo [ERROR] C:\madVR\madVRtoPotPlayerMini64.reg ãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“ã§ã—ãŸã€‚ãƒ•ã‚¡ã‚¤ãƒ«æ§‹æˆã‚’ç¢ºèªã—ã¦ãã ã•ã„ã€‚
     pause
     exit /b 1
 )
 
 echo.
-echo [INFO] ‚·‚×‚Ä‚Ìˆ—‚ªŠ®—¹‚µ‚Ü‚µ‚½B–â‘è‚È‚¯‚ê‚Î madVR ‚ª "C:\madVR" ‚ÉƒCƒ“ƒXƒg[ƒ‹‚³‚ê‚Ä‚¢‚Ü‚·B
+echo [INFO] ã™ã¹ã¦ã®å‡¦ç†ãŒå®Œäº†ã—ã¾ã—ãŸã€‚å•é¡Œãªã‘ã‚Œã° madVR ãŒ "C:\madVR" ã«ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã•ã‚Œã¦ã„ã¾ã™ã€‚
 pause
 exit /b 0

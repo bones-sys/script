@@ -8,4 +8,3 @@ if exist "settings.bin" (
   rename settings.bin settings.bak >NUL)
 echo    settings were reset to default
 echo.
-pause >NUL
