@@ -1,4 +1,5 @@
 @echo off
+chcp 65001 >nul
 
 for /f "tokens=3 delims=\ " %%i in ('whoami /groups^|find "Mandatory"') do set LEVEL=%%i
 if NOT "%LEVEL%"=="High" (
@@ -10,7 +11,7 @@ set VER=1.0.0
 title Install action-menu-item Ver %VER%
 
 echo --------------------------------------------
-echo CEP‚ÌŠJ”­ŽÒƒ‚[ƒh‚ð‹–‰Â‚µ‚Ä‚¢‚Ü‚·...
+echo CEPã®é–‹ç™ºè€…ãƒ¢ãƒ¼ãƒ‰ã‚’è¨±å¯ã—ã¦ã„ã¾ã™...
 echo --------------------------------------------
 
 
@@ -25,6 +26,6 @@ reg add HKEY_CURRENT_USER\Software\Adobe\CSXS.13 /v PlayerDebugMode /t REG_SZ /d
 
 echo.
 echo.
-echo ƒoƒbƒ`‚ðI—¹‚µ‚Ü‚·
+echo ãƒãƒƒãƒã‚’çµ‚äº†ã—ã¾ã™
 
 timeout /t 1 /nobreak >nul
