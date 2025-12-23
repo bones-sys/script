@@ -16,8 +16,8 @@ echo.
 ::-----------------------------------------
 :: ÉãÅ[Égê›íË
 ::-----------------------------------------
-echo Adding static route to 192.168.30.44 via 192.168.80.6 ...
-route add 192.168.30.44 mask 255.255.255.255 192.168.80.6 -p
+echo Adding static route to 192.168.30.0/24 subnet via 192.168.80.6 ...
+route add 192.168.30.0 mask 255.255.255.0 192.168.80.6 -p
 
 echo.
 echo Route added successfully.
