@@ -1,4 +1,5 @@
 @echo off
+chcp 65001 >nul
 
 for /f "tokens=3 delims=\ " %%i in ('whoami /groups^|find "Mandatory"') do set LEVEL=%%i
 if NOT "%LEVEL%"=="High" (
@@ -7,39 +8,39 @@ exit
 )
 
 echo --------------------------------------------
-echo ƒXƒŠ[ƒv‚ğ–³Œø‚É‚µ‚Ä‚¢‚Ü‚·...
+echo ã‚¹ãƒªãƒ¼ãƒ—ã‚’ç„¡åŠ¹ã«ã—ã¦ã„ã¾ã™...
 powercfg -x standby-timeout-ac 0
 echo --------------------------------------------
 echo.
 echo.
 
 echo --------------------------------------------
-echo k¬•\¦‚ÌƒLƒƒƒbƒVƒ…‚ğ–³Œø‚Éİ’è‚µ‚Ä‚¢‚Ü‚·...
+echo ç¸®å°è¡¨ç¤ºã®ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã‚’ç„¡åŠ¹ã«è¨­å®šã—ã¦ã„ã¾ã™...
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Explorer" /v DisableThumbsDBOnNetworkFolders /t REG_DWORD /d 1 /f
 echo --------------------------------------------
 echo.
 echo.
 
 echo --------------------------------------------
-echo RDP‚ğ—LŒø‚É‚µ‚Ä‚¢‚Ü‚·...
+echo RDPã‚’æœ‰åŠ¹ã«ã—ã¦ã„ã¾ã™...
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
-powershell "Enable-NetFirewallRule -DisplayGroup 'ƒŠƒ‚[ƒg ƒfƒXƒNƒgƒbƒv'"
+powershell "Enable-NetFirewallRule -DisplayGroup 'ãƒªãƒ¢ãƒ¼ãƒˆ ãƒ‡ã‚¹ã‚¯ãƒˆãƒƒãƒ—'"
 echo --------------------------------------------
 echo.
 echo.
 
 echo --------------------------------------------
-echo ƒlƒbƒgƒ[ƒN’Tõ‚Æƒtƒ@ƒCƒ‹‚ÆƒvƒŠƒ“ƒ^[‚Ì‹¤—L‚ğ—LŒø‰»‚µ‚Ä‚¢‚Ü‚·...
-powershell "Set-NetFirewallRule -DisplayGroup 'ƒlƒbƒgƒ[ƒN’Tõ' -Profile Domain,Private -Enabled True"
-powershell "Set-NetFirewallRule -DisplayGroup 'ƒtƒ@ƒCƒ‹‚ÆƒvƒŠƒ“ƒ^[‚Ì‹¤—L' -Profile Domain -Enabled True"
+echo ãƒãƒƒãƒˆãƒ¯ãƒ¼ã‚¯æ¢ç´¢ã¨ãƒ•ã‚¡ã‚¤ãƒ«ã¨ãƒ—ãƒªãƒ³ã‚¿ãƒ¼ã®å…±æœ‰ã‚’æœ‰åŠ¹åŒ–ã—ã¦ã„ã¾ã™...
+powershell "Set-NetFirewallRule -DisplayGroup 'ãƒãƒƒãƒˆãƒ¯ãƒ¼ã‚¯æ¢ç´¢' -Profile Domain,Private -Enabled True"
+powershell "Set-NetFirewallRule -DisplayGroup 'ãƒ•ã‚¡ã‚¤ãƒ«ã¨ãƒ—ãƒªãƒ³ã‚¿ãƒ¼ã®å…±æœ‰' -Profile Domain -Enabled True"
 echo --------------------------------------------
 echo.
 echo.
 
 echo --------------------------------------------
-echo ©“®ƒƒOƒIƒ“‚ğİ’è‚µ‚Ä‚¢‚Ü‚·...
-set /p username=ƒ†[ƒU[–¼iƒhƒƒCƒ“ˆÈŠOj‚ğ“ü—Í‚µ‚Ä‚­‚¾‚³‚¢:
-set /p password=ƒpƒXƒ[ƒh‚ğ“ü—Í‚µ‚Ä‚­‚¾‚³‚¢:
+echo è‡ªå‹•ãƒ­ã‚°ã‚ªãƒ³ã‚’è¨­å®šã—ã¦ã„ã¾ã™...
+set /p username=ãƒ¦ãƒ¼ã‚¶ãƒ¼åï¼ˆãƒ‰ãƒ¡ã‚¤ãƒ³ä»¥å¤–ï¼‰ã‚’å…¥åŠ›ã—ã¦ãã ã•ã„:
+set /p password=ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ã‚’å…¥åŠ›ã—ã¦ãã ã•ã„:
 
 for /f "tokens=2 delims=@" %%i in ('whoami /upn') do (
     set domain_name=%%i
@@ -72,8 +73,8 @@ reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\S
 echo.
 echo.
 echo --------------------------------------------
-echo DeadlineClient‚ğƒCƒ“ƒXƒg[ƒ‹’†‚Å‚·...
-echo ƒCƒ“ƒXƒg[ƒ‹‚É‚Í”•ª‚©‚©‚éê‡‚ª‚ ‚è‚Ü‚·A‚±‚ÌƒEƒBƒ“ƒhƒE‚ğ•Â‚¶‚È‚¢‚Å‚­‚¾‚³‚¢
+echo DeadlineClientã‚’ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ä¸­ã§ã™...
+echo ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã«ã¯æ•°åˆ†ã‹ã‹ã‚‹å ´åˆãŒã‚ã‚Šã¾ã™ã€ã“ã®ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’é–‰ã˜ãªã„ã§ãã ã•ã„
 
 %client_destination%\DeadlineClient.exe --mode unattended --connectiontype Direct --repositorydir \\bonehead-5\VFX01\__Deadline --killprocesses true --slavestartup true --blockautoupdateoverride NotBlocked --launcherservice false
 
@@ -102,7 +103,7 @@ netsh advfirewall firewall add rule name="Deadline Worker" dir=in action=allow p
 
 icacls "C:\Program Files\Thinkbox" /grant Users:(OI)(CI)M /T
 
-echo ƒCƒ“ƒXƒg[ƒ‹‚ÍŠ®—¹‚µ‚Ü‚µ‚½
+echo ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã¯å®Œäº†ã—ã¾ã—ãŸ
 echo --------------------------------------------
 echo.
 echo.
@@ -110,40 +111,40 @@ echo.
 echo.
 echo.
 echo --------------------------------------------
-echo IPƒAƒhƒŒƒX‚ğİ’è’†‚Å‚·...
-REM ƒzƒXƒg–¼‚ğæ“¾
+echo IPã‚¢ãƒ‰ãƒ¬ã‚¹ã‚’è¨­å®šä¸­ã§ã™...
+REM ãƒ›ã‚¹ãƒˆåã‚’å–å¾—
 for /f "tokens=2 delims=_" %%A in ('hostname') do set HOST_SUFFIX=%%A
 
-REM ”’l•”•ª‚É100‚ğ‰ÁZiƒfƒtƒHƒ‹ƒg’l‚ğİ’èj
+REM æ•°å€¤éƒ¨åˆ†ã«100ã‚’åŠ ç®—ï¼ˆãƒ‡ãƒ•ã‚©ãƒ«ãƒˆå€¤ã‚’è¨­å®šï¼‰
 if not defined HOST_SUFFIX set HOST_SUFFIX=0
 
 for /f "tokens=* delims=0" %%B in ("%HOST_SUFFIX%") do set HOST_SUFFIX=%%B
 set /a IP_SUFFIX=100 + %HOST_SUFFIX%
 
-REM ƒlƒbƒgƒ[ƒNƒAƒ_ƒvƒ^[–¼iŠÂ‹«‚É‰‚¶‚Ä•ÏXj
-set NETWORK_ADAPTER_NAME="ƒC[ƒTƒlƒbƒg"
-REM ŒÅ’èIPƒAƒhƒŒƒX‚ÌƒvƒŒƒtƒBƒbƒNƒX
+REM ãƒãƒƒãƒˆãƒ¯ãƒ¼ã‚¯ã‚¢ãƒ€ãƒ—ã‚¿ãƒ¼åï¼ˆç’°å¢ƒã«å¿œã˜ã¦å¤‰æ›´ï¼‰
+set NETWORK_ADAPTER_NAME="ã‚¤ãƒ¼ã‚µãƒãƒƒãƒˆ"
+REM å›ºå®šIPã‚¢ãƒ‰ãƒ¬ã‚¹ã®ãƒ—ãƒ¬ãƒ•ã‚£ãƒƒã‚¯ã‚¹
 set IP_PREFIX=192.168.33
-REM ƒTƒuƒlƒbƒgƒ}ƒXƒN
+REM ã‚µãƒ–ãƒãƒƒãƒˆãƒã‚¹ã‚¯
 set SUBNET_MASK=255.255.255.0
-REM ƒfƒtƒHƒ‹ƒgƒQ[ƒgƒEƒFƒC
+REM ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã‚²ãƒ¼ãƒˆã‚¦ã‚§ã‚¤
 set GATEWAY=192.168.33.254
-REM —DæDNSƒT[ƒo[
+REM å„ªå…ˆDNSã‚µãƒ¼ãƒãƒ¼
 set DNS=192.168.30.60
-REM ‘ã‘ÖDNSƒT[ƒo[
+REM ä»£æ›¿DNSã‚µãƒ¼ãƒãƒ¼
 set ALT_DNS=192.168.30.70
 
-REM IPƒAƒhƒŒƒX‚Ì––”ö‚ğƒzƒXƒg–¼‚©‚çİ’è
+REM IPã‚¢ãƒ‰ãƒ¬ã‚¹ã®æœ«å°¾ã‚’ãƒ›ã‚¹ãƒˆåã‹ã‚‰è¨­å®š
 set IP_ADDRESS=%IP_PREFIX%.%IP_SUFFIX%
 
-REM ƒlƒbƒgƒ[ƒNİ’è‚ğ•ÏX
-echo İ’è’†: %IP_ADDRESS%
+REM ãƒãƒƒãƒˆãƒ¯ãƒ¼ã‚¯è¨­å®šã‚’å¤‰æ›´
+echo è¨­å®šä¸­: %IP_ADDRESS%
 netsh interface ip set address name=%NETWORK_ADAPTER_NAME% static %IP_ADDRESS% %SUBNET_MASK% %GATEWAY%
 netsh interface ip set dns name=%NETWORK_ADAPTER_NAME% static %DNS%
 netsh interface ip add dns name=%NETWORK_ADAPTER_NAME% %ALT_DNS% index=2
 
-REM Š®—¹ƒƒbƒZ[ƒW
-echo IPƒAƒhƒŒƒX‚ª %IP_ADDRESS% ‚Éİ’è‚³‚ê‚Ü‚µ‚½B
+REM å®Œäº†ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸
+echo IPã‚¢ãƒ‰ãƒ¬ã‚¹ãŒ %IP_ADDRESS% ã«è¨­å®šã•ã‚Œã¾ã—ãŸã€‚
 echo --------------------------------------------
 echo.
 echo.

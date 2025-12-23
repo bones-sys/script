@@ -1,20 +1,21 @@
 @echo off
+chcp 65001 >nul
 ::-----------------------------------------
-:: ŠÇ—ÒŒ ŒÀƒ`ƒFƒbƒNiMandatory Levelj
+:: ç®¡ç†è€…æ¨©é™ãƒã‚§ãƒƒã‚¯ï¼ˆMandatory Levelï¼‰
 ::-----------------------------------------
 for /f "tokens=3 delims=\ " %%i in ('whoami /groups ^| find "Mandatory"') do set LEVEL=%%i
 
 if NOT "%LEVEL%"=="High" (
-    echo ŠÇ—ÒŒ ŒÀ‚ÅÄÀs‚µ‚Ü‚·...
+    echo ç®¡ç†è€…æ¨©é™ã§å†å®Ÿè¡Œã—ã¾ã™...
     powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -Command "Start-Process '%~f0' -Verb runas"
     exit /b
 )
 
-echo ŠÇ—ÒŒ ŒÀ‚ğŠm”F‚µ‚Ü‚µ‚½B
+echo ç®¡ç†è€…æ¨©é™ã‚’ç¢ºèªã—ã¾ã—ãŸã€‚
 echo.
 
 ::-----------------------------------------
-:: ƒ‹[ƒgíœ
+:: ãƒ«ãƒ¼ãƒˆå‰Šé™¤
 ::-----------------------------------------
 echo Deleting static route to 192.168.30.44 ...
 route delete 192.168.30.44

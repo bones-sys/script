@@ -1,17 +1,18 @@
 @echo off
+chcp 65001 >nul
 setlocal enabledelayedexpansion
 
-rem „Ÿ„Ÿ UNC¨ƒhƒ‰ƒCƒuƒ}ƒbƒsƒ“ƒO „Ÿ„Ÿ
+rem â”€â”€ UNCâ†’ãƒ‰ãƒ©ã‚¤ãƒ–ãƒãƒƒãƒ”ãƒ³ã‚° â”€â”€
 pushd "%~dp0"
 set "ROOT=%CD%\"
 
-rem „Ÿ„Ÿ 1ŠK‘w–Ú „Ÿ„Ÿ
+rem â”€â”€ 1éšå±¤ç›® â”€â”€
 for /D %%A in ("%ROOT%*") do (
-    rem „Ÿ„Ÿ 2ŠK‘w–Ú „Ÿ„Ÿ
+    rem â”€â”€ 2éšå±¤ç›® â”€â”€
     for /D %%B in ("%%~fA\*") do (
-        rem „Ÿ„Ÿ 3ŠK‘w–Ú „Ÿ„Ÿ
+        rem â”€â”€ 3éšå±¤ç›® â”€â”€
         for /D %%C in ("%%~fB\*") do (
-            rem ƒtƒHƒ‹ƒ_–¼‚ª __CGLO ‚È‚çƒŠƒl[ƒ€
+            rem ãƒ•ã‚©ãƒ«ãƒ€åãŒ __CGLO ãªã‚‰ãƒªãƒãƒ¼ãƒ 
             if /I "%%~nxC"=="__CGLO" (
                 echo Renaming "%%~fC" to "___3D_PREVIZ"
                 ren "%%~fC" "___3D_PREVIZ"
@@ -20,7 +21,7 @@ for /D %%A in ("%ROOT%*") do (
     )
 )
 
-rem „Ÿ„Ÿ Œã•Ğ•t‚¯ „Ÿ„Ÿ
+rem â”€â”€ å¾Œç‰‡ä»˜ã‘ â”€â”€
 popd
 
 pause
