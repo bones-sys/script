@@ -1,0 +1,79 @@
+# .github/workflows/create-zip.yml
+name: Create ZIP for each folder
+
+on:
+  push:
+    paths:
+      - "**/*.bat"
+    branches:
+      - master
+
+jobs:
+  create-zip:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create ZIP files
+        run: |
+          # 除外するフォルダ
+          EXCLUDE_DIRS=".vscode user_tasks .git .github zip"
+
+          # zipフォルダをクリーンアップ
+          rm -rf zip
+
+          # ルート直下のフォルダを取得
+          for dir in */; do
+            dir_name="${dir%/}"
+
+            # 除外フォルダをスキップ
+            skip=false
+            for exclude in $EXCLUDE_DIRS; do
+              if [ "$dir_name" = "$exclude" ]; then
+                skip=true
+                break
+              fi
+            done
+
+            if [ "$skip" = true ]; then
+              echo "Skipping: $dir_name"
+              continue
+            fi
+
+            # フォルダ内に.batファイルがあるか確認
+            if ls "$dir_name"/*.bat 1> /dev/null 2>&1; then
+              echo "Processing: $dir_name"
+
+              # 出力先フォルダを作成
+              mkdir -p "zip/$dir_name"
+
+              # 1. フォルダ全体のzip（全batをまとめる）
+              cd "$dir_name"
+              zip -r "../zip/$dir_name/${dir_name}.zip" *.bat
+              cd ..
+
+              # 2. 個別batファイルのzip
+              for bat_file in "$dir_name"/*.bat; do
+                bat_name=$(basename "$bat_file" .bat)
+                zip -j "zip/$dir_name/${bat_name}.zip" "$bat_file"
+              done
+
+            else
+              echo "No .bat files in: $dir_name"
+            fi
+          done
+
+      - name: Commit ZIP files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add zip/
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Auto-update ZIP files"
+            git push
+          fi
