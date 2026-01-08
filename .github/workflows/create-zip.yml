@@ -3,10 +3,10 @@ name: Create ZIP for each folder
 
 on:
   push:
+    branches: [master]
     paths:
       - "**/*.bat"
-    branches:
-      - master
+  workflow_dispatch:
 
 jobs:
   create-zip:
