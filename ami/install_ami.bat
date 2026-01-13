@@ -12,7 +12,6 @@ title Install action-menu-item Ver %VER%
 
 echo --------------------------------------------
 echo slackの設定を変更しています...
-echo --------------------------------------------
 set "jsonFilePath=%USERPROFILE%\AppData\Roaming\Slack\storage\root-state.json"
 
 if exist "%jsonFilePath%" (
@@ -57,10 +56,26 @@ echo --------------------------------------------
 echo.
 echo.
 
-if not exist "%USERPROFILE%\ami_version" (
-    mkdir "%USERPROFILE%\ami_version"
-    echo ami_versionフォルダを作成しました
+echo --------------------------------------------
+echo ami_versionフォルダを初期化しています...
+if exist "%USERPROFILE%\ami_version" (
+    curl http://localhost:51000/api/signal
+    timeout /t 1
+    rmdir /s /q "%USERPROFILE%\ami_version"
 )
+echo --------------------------------------------
+echo.
+echo.
+if exist "%USERPROFILE%\ami_version" (
+    echo --------------------------------------------
+    echo フォルダの削除に失敗しました。手動で削除して再度実行してください: %USERPROFILE%\ami_version
+    echo --------------------------------------------
+    echo.
+    echo.
+    pause
+    goto End
+)
+mkdir "%USERPROFILE%\ami_version"
 
 set REMOTE_FOLDER=\\bs00\Bon_system\ami_launcher
 set LAUNCHER_FOLDER=%USERPROFILE%\ami_launcher
@@ -102,7 +117,7 @@ if exist %REMOTE_FOLDER% (
         echo 既存のフォルダを削除しました
     )
 
-    robocopy %REMOTE_FOLDER% %LAUNCHER_FOLDER% /s
+    robocopy %REMOTE_FOLDER% %LAUNCHER_FOLDER% /s /MT:16
     reg add %CHROME_HKEY% /v "1" /t "REG_SZ" /d "ami://*" /f
 
     reg add %LAUNCHER_HKEY% /t "REG_SZ" /d "URL:ami" /f
@@ -115,12 +130,16 @@ if exist %REMOTE_FOLDER% (
 
     if not "%ERRORLEVEL%" == "0" (
             echo インストール中にエラーが発生しました
+            pause
+            goto End
     ) else (
         echo インストールは完了しました
         echo.
     )
 ) else (
-    echo %REMOTE_FOLDER% が存在しません
+    echo %REMOTE_FOLDER% が存在しません、社内ネットワークに接続して再度実行してください。
+    pause
+    goto End
 )
 echo --------------------------------------------
 :End
