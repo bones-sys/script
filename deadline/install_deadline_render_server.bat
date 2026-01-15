@@ -76,7 +76,7 @@ echo --------------------------------------------
 echo DeadlineClientをインストール中です...
 echo インストールには数分かかる場合があります、このウィンドウを閉じないでください
 
-%client_destination%\DeadlineClient.exe --mode unattended --connectiontype Direct --repositorydir \\bonehead-5\VFX01\__Deadline --killprocesses true --slavestartup true --blockautoupdateoverride NotBlocked --launcherservice false
+%client_destination%\DeadlineClient.exe --mode unattended --connectiontype Direct --repositorydir \\bonehead-5\VFX01\__Deadline_2025 --killprocesses true --slavestartup true --blockautoupdateoverride NotBlocked --launcherservice false
 
 set deadline_ini=%UserProfile%\AppData\Local\Thinkbox\Deadline10\deadline.ini
 set entry="LaunchPulseAtStartup=True"
