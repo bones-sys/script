@@ -30,7 +30,7 @@ echo --------------------------------------------
 echo DeadlineClientをインストール中です...
 echo インストールには数分かかる場合があります、このウィンドウを閉じないでください
 
-%client_destination%\DeadlineClient.exe --mode unattended --connectiontype Direct --repositorydir \\bonehead-5\VFX01\__Deadline --killprocesses true --slavestartup false --blockautoupdateoverride NotBlocked --launcherservice false
+%client_destination%\DeadlineClient.exe --mode unattended --connectiontype Direct --repositorydir \\bonehead-5\VFX01\__Deadline_2025 --killprocesses true --slavestartup false --blockautoupdateoverride NotBlocked --launcherservice false
 
 set thinkbox=%USERPROFILE%\AppData\Local\Thinkbox
 del %client_destination%\DeadlineClient.exe
