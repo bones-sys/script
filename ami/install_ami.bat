@@ -12,7 +12,20 @@ title Install action-menu-item Ver %VER%
 
 echo --------------------------------------------
 echo slackの設定を変更しています...
-set "jsonFilePath=%USERPROFILE%\AppData\Roaming\Slack\storage\root-state.json"
+set "jsonFilePath="
+
+for %%P in (
+    "%APPDATA%\Slack\storage\root-state.json"
+    "%LOCALAPPDATA%\Packages\91750D7E.Slack_8she8kybcnzg4\LocalCache\Roaming\Slack\storage\root-state.json"
+    "%LOCALAPPDATA%\Packages\com.tinyspeck.slackdesktop_8yrtsj140pw4g\LocalCache\Roaming\Slack\storage\root-state.json"
+) do (
+    if exist "%%~P" (
+        set "jsonFilePath=%%~P"
+        goto :SlackJsonFound
+    )
+)
+
+:SlackJsonFound
 
 if exist "%jsonFilePath%" (
     setlocal enabledelayedexpansion
@@ -30,28 +43,6 @@ if exist "%jsonFilePath%" (
 ) else (
     echo ファイルが見つかりません: %jsonFilePath%
 )
-echo --------------------------------------------
-echo.
-echo.
-
-echo --------------------------------------------
-echo 縮小表示のキャッシュを無効に設定しています...
-reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Explorer" /v DisableThumbsDBOnNetworkFolders /t REG_DWORD /d 1 /f
-echo --------------------------------------------
-echo.
-echo.
-
-echo --------------------------------------------
-echo RDPを有効にしています...
-reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
-powershell "Enable-NetFirewallRule -DisplayGroup 'リモート デスクトップ'"
-echo --------------------------------------------
-echo.
-echo.
-
-echo --------------------------------------------
-echo initialKeyboardIndicatorsを2147483650に変更してNUMLOCKをオンにしてます...
-reg add "HKEY_USERS\.DEFAULT\Control Panel\Keyboard" /v initialKeyboardIndicators /t REG_SZ /d 2147483650 /f
 echo --------------------------------------------
 echo.
 echo.

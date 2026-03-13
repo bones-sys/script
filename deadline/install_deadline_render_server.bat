@@ -15,29 +15,6 @@ echo.
 echo.
 
 echo --------------------------------------------
-echo 縮小表示のキャッシュを無効に設定しています...
-reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Explorer" /v DisableThumbsDBOnNetworkFolders /t REG_DWORD /d 1 /f
-echo --------------------------------------------
-echo.
-echo.
-
-echo --------------------------------------------
-echo RDPを有効にしています...
-reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
-powershell "Enable-NetFirewallRule -DisplayGroup 'リモート デスクトップ'"
-echo --------------------------------------------
-echo.
-echo.
-
-echo --------------------------------------------
-echo ネットワーク探索とファイルとプリンターの共有を有効化しています...
-powershell "Set-NetFirewallRule -DisplayGroup 'ネットワーク探索' -Profile Domain,Private -Enabled True"
-powershell "Set-NetFirewallRule -DisplayGroup 'ファイルとプリンターの共有' -Profile Domain -Enabled True"
-echo --------------------------------------------
-echo.
-echo.
-
-echo --------------------------------------------
 echo 自動ログオンを設定しています...
 set /p username=ユーザー名（ドメイン以外）を入力してください:
 set /p password=パスワードを入力してください:
