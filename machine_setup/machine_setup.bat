@@ -32,34 +32,4 @@ echo --------------------------------------------
 echo.
 echo.
 
-echo --------------------------------------------
-echo 縮小表示のキャッシュを無効に設定しています...
-reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Explorer" /v DisableThumbsDBOnNetworkFolders /t REG_DWORD /d 1 /f
-echo --------------------------------------------
-echo.
-echo.
-
-echo --------------------------------------------
-echo RDPを有効にしています...
-reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
-powershell "Enable-NetFirewallRule -DisplayGroup 'リモート デスクトップ'"
-echo --------------------------------------------
-echo.
-echo.
-
-echo --------------------------------------------
-echo initialKeyboardIndicatorsを2147483650に変更してNUMLOCKをオンにしてます...
-reg add "HKEY_USERS\.DEFAULT\Control Panel\Keyboard" /v initialKeyboardIndicators /t REG_SZ /d 2147483650 /f
-echo --------------------------------------------
-echo.
-echo.
-
-echo --------------------------------------------
-echo ネットワーク探索とファイルとプリンターの共有を有効化しています...
-powershell "Set-NetFirewallRule -DisplayGroup 'ネットワーク探索' -Profile Domain,Private -Enabled True"
-powershell "Set-NetFirewallRule -DisplayGroup 'ファイルとプリンターの共有' -Profile Domain -Enabled True"
-echo --------------------------------------------
-echo.
-echo.
-
 pause
