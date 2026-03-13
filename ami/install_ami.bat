@@ -12,7 +12,20 @@ title Install action-menu-item Ver %VER%
 
 echo --------------------------------------------
 echo slackの設定を変更しています...
-set "jsonFilePath=%USERPROFILE%\AppData\Roaming\Slack\storage\root-state.json"
+set "jsonFilePath="
+
+for %%P in (
+    "%APPDATA%\Slack\storage\root-state.json"
+    "%LOCALAPPDATA%\Packages\91750D7E.Slack_8she8kybcnzg4\LocalCache\Roaming\Slack\storage\root-state.json"
+    "%LOCALAPPDATA%\Packages\com.tinyspeck.slackdesktop_8yrtsj140pw4g\LocalCache\Roaming\Slack\storage\root-state.json"
+) do (
+    if exist "%%~P" (
+        set "jsonFilePath=%%~P"
+        goto :SlackJsonFound
+    )
+)
+
+:SlackJsonFound
 
 if exist "%jsonFilePath%" (
     setlocal enabledelayedexpansion
@@ -44,7 +57,7 @@ echo.
 echo --------------------------------------------
 echo RDPを有効にしています...
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
-powershell "Enable-NetFirewallRule -DisplayGroup 'リモート デスクトップ'"
+powershell -NoProfile -ExecutionPolicy RemoteSigned -Command "$rules = Get-NetFirewallRule -Service 'TermService' -ErrorAction SilentlyContinue; if ($rules) { $rules | Enable-NetFirewallRule } else { Write-Warning 'TermService のルールが見つからないため、名前で再試行します。'; Get-NetFirewallRule -Name 'RemoteDesktop-*' -ErrorAction SilentlyContinue | Enable-NetFirewallRule }"
 echo --------------------------------------------
 echo.
 echo.
