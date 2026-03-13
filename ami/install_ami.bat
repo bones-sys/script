@@ -48,13 +48,6 @@ echo.
 echo.
 
 echo --------------------------------------------
-echo initialKeyboardIndicatorsを2147483650に変更してNUMLOCKをオンにしてます...
-reg add "HKEY_USERS\.DEFAULT\Control Panel\Keyboard" /v initialKeyboardIndicators /t REG_SZ /d 2147483650 /f
-echo --------------------------------------------
-echo.
-echo.
-
-echo --------------------------------------------
 echo ami_versionフォルダを初期化しています...
 if exist "%USERPROFILE%\ami_version" (
     curl http://localhost:51000/api/signal
