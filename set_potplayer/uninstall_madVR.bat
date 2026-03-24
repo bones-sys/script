@@ -37,17 +37,13 @@ if errorlevel 8 (
     exit /b 1
 )
 
-REM --- (6) windowsdesktop-runtime をサイレントインストール ---
-if exist "%SUPPORT_DST%\SupportAssist\X64\windowsdesktop-runtime-8.0.24-win-x64.exe" (
-    echo [INFO] windowsdesktop-runtime-8.0.24-win-x64.exe をインストールします...
-    call "%SUPPORT_DST%\SupportAssist\X64\windowsdesktop-runtime-8.0.24-win-x64.exe" /install /quiet
-    if errorlevel 1 (
-        echo [ERROR] windowsdesktop-runtime のインストールに失敗しました。
-        pause
-        exit /b 1
-    )
+REM --- (6) PotPlayer 用レジストリのインポート ---
+if exist "%SUPPORT_DST%\PotPlayerMini64.reg" (
+    echo [INFO] PotPlayerMini64.reg をインポートします...
+    reg import "%SUPPORT_DST%\PotPlayerMini64.reg"
 ) else (
-    echo [ERROR] %SUPPORT_DST%\SupportAssist\X64\windowsdesktop-runtime-8.0.24-win-x64.exe が見つかりませんでした。
+    echo [WARN] %SUPPORT_DST%\PotPlayerMini64.reg が見つからないためスキップします...
+    echo [ERROR] %SUPPORT_DST%\PotPlayerMini64.reg が見つかりませんでした。ファイル構成を確認してください。
     pause
     exit /b 1
 )
@@ -67,16 +63,6 @@ if exist "%SUPPORT_DST%\SupportAssist\X64\SupportAssistDeployment_x64.exe" (
     exit /b 1
 )
 
-REM --- (8) PotPlayer 用レジストリのインポート ---
-if exist "%SUPPORT_DST%\PotPlayerMini64.reg" (
-    echo [INFO] PotPlayerMini64.reg をインポートします...
-    reg import "%SUPPORT_DST%\PotPlayerMini64.reg"
-) else (
-    echo [WARN] %SUPPORT_DST%\PotPlayerMini64.reg が見つからないためスキップします...
-    echo [ERROR] %SUPPORT_DST%\PotPlayerMini64.reg が見つかりませんでした。ファイル構成を確認してください。
-    pause
-    exit /b 1
-)
 
 echo.
 echo [INFO] すべての処理が完了しました。
