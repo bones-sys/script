@@ -25,13 +25,55 @@ if exist "C:\madVR" (
     rd /s /q "C:\madVR"
 )
 
-REM --- (5) PotPlayer 用レジストリのインポート ---
-if exist "%USERPROFILE%\PotPlayerMini64.reg" (
-    echo [INFO] PotPlayerMini64.reg をインポートします...
-    reg import "%USERPROFILE%\PotPlayerMini64.reg"
+REM --- (5) SupportAssistDeploymentPackage をコピー ---
+set "SUPPORT_SRC=\\bs00\Bon_system\__DELL\SupportAssistDeploymentPackage"
+set "SUPPORT_DST=%USERPROFILE%\SupportAssistDeploymentPackage"
+
+echo [INFO] %SUPPORT_SRC% から %SUPPORT_DST% へコピーします...
+robocopy "%SUPPORT_SRC%" "%SUPPORT_DST%" /E /R:2 /W:2 /NFL /NDL /NJH /NJS
+if errorlevel 8 (
+    echo [ERROR] SupportAssistDeploymentPackage のコピーに失敗しました。
+    pause
+    exit /b 1
+)
+
+REM --- (6) windowsdesktop-runtime をサイレントインストール ---
+if exist "%SUPPORT_DST%\SupportAssist\X64\windowsdesktop-runtime-8.0.24-win-x64.exe" (
+    echo [INFO] windowsdesktop-runtime-8.0.24-win-x64.exe をインストールします...
+    call "%SUPPORT_DST%\SupportAssist\X64\windowsdesktop-runtime-8.0.24-win-x64.exe" /install /quiet
+    if errorlevel 1 (
+        echo [ERROR] windowsdesktop-runtime のインストールに失敗しました。
+        pause
+        exit /b 1
+    )
 ) else (
-    echo [WARN] %USERPROFILE%\PotPlayerMini64.reg が見つからないためスキップします...
-    echo [ERROR] %USERPROFILE%\PotPlayerMini64.reg が見つかりませんでした。ファイル構成を確認してください。
+    echo [ERROR] %SUPPORT_DST%\SupportAssist\X64\windowsdesktop-runtime-8.0.24-win-x64.exe が見つかりませんでした。
+    pause
+    exit /b 1
+)
+
+REM --- (7) SupportAssistDeployment_x64 を実行 ---
+if exist "%SUPPORT_DST%\SupportAssist\X64\SupportAssistDeployment_x64.exe" (
+    echo [INFO] SupportAssistDeployment_x64.exe を実行します...
+    call "%SUPPORT_DST%\SupportAssist\X64\SupportAssistDeployment_x64.exe" TRANSFORMS="%SUPPORT_DST%\SupportAssist\X64\SupportAssistConfiguration.mst" DEPLOYMENTKEY="dell&2024d" SOURCE=TechDirect
+    if errorlevel 1 (
+        echo [ERROR] SupportAssistDeployment_x64.exe の実行に失敗しました。
+        pause
+        exit /b 1
+    )
+) else (
+    echo [ERROR] %SUPPORT_DST%\SupportAssist\X64\SupportAssistDeployment_x64.exe が見つかりませんでした。
+    pause
+    exit /b 1
+)
+
+REM --- (8) PotPlayer 用レジストリのインポート ---
+if exist "%SUPPORT_DST%\PotPlayerMini64.reg" (
+    echo [INFO] PotPlayerMini64.reg をインポートします...
+    reg import "%SUPPORT_DST%\PotPlayerMini64.reg"
+) else (
+    echo [WARN] %SUPPORT_DST%\PotPlayerMini64.reg が見つからないためスキップします...
+    echo [ERROR] %SUPPORT_DST%\PotPlayerMini64.reg が見つかりませんでした。ファイル構成を確認してください。
     pause
     exit /b 1
 )
