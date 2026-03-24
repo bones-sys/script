@@ -26,17 +26,17 @@ if exist "C:\madVR" (
 )
 
 REM --- (5) PotPlayer 用レジストリのインポート ---
-if exist "C:\madVR\madVRtoPotPlayerMini64.reg" (
-    echo [INFO] madVRtoPotPlayerMini64.reg をインポートします...
-    reg import "C:\madVR\madVRtoPotPlayerMini64.reg"
+if exist "%USERPROFILE%\PotPlayerMini64.reg" (
+    echo [INFO] PotPlayerMini64.reg をインポートします...
+    reg import "%USERPROFILE%\PotPlayerMini64.reg"
 ) else (
-    echo [WARN] C:\madVR\madVRtoPotPlayerMini64.reg が見つからないためスキップします...
-    echo [ERROR] C:\madVR\madVRtoPotPlayerMini64.reg が見つかりませんでした。ファイル構成を確認してください。
+    echo [WARN] %USERPROFILE%\PotPlayerMini64.reg が見つからないためスキップします...
+    echo [ERROR] %USERPROFILE%\PotPlayerMini64.reg が見つかりませんでした。ファイル構成を確認してください。
     pause
     exit /b 1
 )
 
 echo.
-echo [INFO] すべての処理が完了しました。問題なければ madVR がアンインストールされています。
+echo [INFO] すべての処理が完了しました。
 pause
 exit /b 0
