@@ -4,8 +4,8 @@ name: Create ZIP for each folder
 on:
   push:
     branches: [master]
-    paths:
-      - "**/*.bat"
+    paths-ignore:
+      - "zip/**"
   workflow_dispatch:
 
 jobs:
@@ -43,26 +43,27 @@ jobs:
               continue
             fi
 
-            # フォルダ内に.batファイルがあるか確認
-            if ls "$dir_name"/*.bat 1> /dev/null 2>&1; then
+            # フォルダ内にファイルがあるか確認（再帰）
+            if find "$dir_name" -type f -print -quit | grep -q .; then
               echo "Processing: $dir_name"
 
               # 出力先フォルダを作成
               mkdir -p "zip/$dir_name"
 
-              # 1. フォルダ全体のzip（全batをまとめる）
+              # 1. フォルダ全体のzip（全ファイルをまとめる）
               cd "$dir_name"
-              zip -r "../zip/$dir_name/${dir_name}.zip" *.bat
+              zip -r "../zip/$dir_name/${dir_name}.zip" .
               cd ..
 
-              # 2. 個別batファイルのzip
-              for bat_file in "$dir_name"/*.bat; do
-                bat_name=$(basename "$bat_file" .bat)
-                zip -j "zip/$dir_name/${bat_name}.zip" "$bat_file"
-              done
+              # 2. 個別ファイルのzip（再帰）
+              while IFS= read -r file_path; do
+                rel_path="${file_path#${dir_name}/}"
+                zip_name="${rel_path//\//__}.zip"
+                zip -j "zip/$dir_name/$zip_name" "$file_path"
+              done < <(find "$dir_name" -type f)
 
             else
-              echo "No .bat files in: $dir_name"
+              echo "No files in: $dir_name"
             fi
           done
 
