@@ -58,7 +58,8 @@ jobs:
               # 2. 個別ファイルのzip（再帰）
               while IFS= read -r file_path; do
                 rel_path="${file_path#${dir_name}/}"
-                zip_name="${rel_path//\//__}.zip"
+                base_path="${rel_path%.*}"
+                zip_name="${base_path//\//__}.zip"
                 zip -j "zip/$dir_name/$zip_name" "$file_path"
               done < <(find "$dir_name" -type f)
 
