@@ -20,14 +20,30 @@ chrome.runtime.onMessage.addListener((msg) => {
   }
 });
 
-document.addEventListener(
+// キャプチャフェーズ（ページのどのハンドラよりも先）でクリックを奪う。
+// ShotGrid のような SPA のルーターに遷移処理を始めさせないことが目的。
+// 一度ルーターに遷移させてから goBack で差し戻すと、URL とルーターの
+// 内部状態がズレて「同じリンクを押しても無反応」になることがある。
+// パネル・メニュー開閉用の <a>（Google アプリランチャー等）は
+// 下の属性チェックで除外するので、キャプチャでも壊れない。
+window.addEventListener(
   "click",
   (e) => {
     // 固定タブでなければブラウザ標準の挙動に任せる（SPA も壊さない）
     if (!isPinned) return;
 
+    if (e.defaultPrevented) return;
+
     const a = e.target.closest("a[href]");
     if (!a) return;
+
+    // パネルやメニューの開閉トグルとして使われる <a> は対象外。
+    // （万一本当に遷移した場合は webNavigation 側のフォールバックが拾う）
+    if (
+      a.getAttribute("role") === "button" ||
+      a.hasAttribute("aria-haspopup") ||
+      a.hasAttribute("aria-expanded")
+    ) return;
 
     // 左クリックのみ対象。修飾キー押下時はブラウザ標準の挙動を尊重
     if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
@@ -47,9 +63,9 @@ document.addEventListener(
       a.search === location.search;
     if (hashOnly) return;
 
-    // 遷移を止めて background に依頼（固定タブ側は一切遷移しない）
+    // 遷移を止め、SPA ルーターにも渡さず、background に依頼する
     e.preventDefault();
-    e.stopPropagation();
+    e.stopImmediatePropagation();
 
     chrome.runtime.sendMessage({ type: "linkClick", href }, (res) => {
       if (chrome.runtime.lastError) {
@@ -61,5 +77,5 @@ document.addEventListener(
       window.location.href = href;    // 同一ページ扱いなど → 自前で遷移
     });
   },
-  true
+  true // キャプチャフェーズ: SPA ルーターより先に処理する
 );

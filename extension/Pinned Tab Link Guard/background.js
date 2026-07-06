@@ -72,6 +72,37 @@ function isSamePage(a, b) {
   }
 }
 
+// URL を「ルート文字列」に正規化する。
+// ハッシュルーティング SPA（Intel EMA 等）の "/#/endpoints/ID" と
+// 実パスの "/endpoints/ID" を同じ土俵で比較できるようにする。
+// 例: https://host/#/endpoints    -> /endpoints
+//     https://host/#/endpoints/ID -> /endpoints/ID
+//     https://host/app/page       -> /app/page
+function routeOf(u) {
+  const x = new URL(u);
+  let p = x.pathname.replace(/\/+$/, "");
+  if (x.hash.startsWith("#/")) {
+    p += x.hash.slice(1).replace(/\/+$/, "");
+  }
+  return p || "/";
+}
+
+// target が base の「子」（基準ルート配下への深掘り）かどうか。
+// 例: base /#/endpoints に対する /#/endpoints/042FE... は子 → 固定タブ内で許可。
+//     base /page/7344 に対する /page/39587 は子ではない → 新規タブ。
+function isChildUrl(base, target) {
+  try {
+    const ub = new URL(base), ut = new URL(target);
+    if (ub.origin !== ut.origin) return false;
+    const rb = routeOf(base), rt = routeOf(target);
+    // 基準がルート("/")そのものの場合、同一オリジン全体が子になってしまい
+    // ガードが機能しなくなるため、完全一致のみ許可する
+    return rt === rb || (rb !== "/" && rt.startsWith(rb + "/"));
+  } catch (_) {
+    return false;
+  }
+}
+
 // content.js からの問い合わせ
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (!msg || !sender.tab) return;
@@ -86,8 +117,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     const base = lockedUrl.get(tabId);
     const target = msg.href;
 
-    // 固定対象でない / 同一ページ（クエリ・ハッシュ差）→ 通常遷移させる
-    if (!base || !isHttp(target) || isSamePage(base, target)) {
+    // 固定対象でない / 同一ページ（クエリ・ハッシュ差）/ 基準配下への深掘り
+    // → 固定タブ内で通常遷移させる
+    if (!base || !isHttp(target) || isSamePage(base, target) || isChildUrl(base, target)) {
       sendResponse({ handled: false });
       return;
     }
@@ -108,6 +140,7 @@ function bounceNavigation(tabId, target) {
   if (!base) return;                    // 固定対象でない
   if (!isHttp(target)) return;
   if (isSamePage(base, target)) return; // 同一ページ内（クエリ/ハッシュ差）は許可
+  if (isChildUrl(base, target)) return; // 基準配下への深掘り（EMA の詳細画面等）は許可
 
   // 別ページ遷移 → 新規タブで開き、元タブは基準URLへ差し戻す
   chrome.tabs.create({ url: target, active: true, openerTabId: tabId }, (newTab) => {
