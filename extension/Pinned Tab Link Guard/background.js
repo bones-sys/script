@@ -13,41 +13,90 @@
 
 const lockedUrl = new Map();      // tabId -> 基準URL
 const ownCreatedTabs = new Set(); // 自分で開いた新規タブ（初回遷移を無視）
-const restoring = new Set();      // 差し戻し中のタブ（再発火を無視）
+const restoring = new Map();      // tabId -> 差し戻し猶予期限(ms)
+const lastBounce = new Map();     // tabId -> 最後にバウンスした時刻(ms)
+const typedAllow = new Map();     // tabId -> typed遷移を許可した時刻(ms)
 
-// restoring フラグを立てる。BFCache 復元では webNavigation イベントが
-// 発火しないことがあり、フラグが残留すると以降の判定が狂うため、
-// 一定時間で自動クリアする保険を付ける。
+// 差し戻し中フラグは「時間窓」方式。
+// SPA ルーター（Confluence 等）は goBack への反応で pushState を連発するため、
+// 「1回のイベントで消費」だと2発目以降を誤ってバウンスし、
+// 相互応酬の無限ループ（タブ増殖）になる。窓の間はすべて無視する。
+const RESTORE_WINDOW_MS = 2000;
+
 function markRestoring(tabId) {
-  restoring.add(tabId);
-  setTimeout(() => restoring.delete(tabId), 2000);
+  restoring.set(tabId, Date.now() + RESTORE_WINDOW_MS);
+}
+
+function isRestoring(tabId) {
+  const until = restoring.get(tabId);
+  if (!until) return false;
+  if (Date.now() > until) {
+    restoring.delete(tabId);
+    return false;
+  }
+  return true;
 }
 
 function isHttp(u) {
   return typeof u === "string" && /^https?:/i.test(u);
 }
 
+// ---- 基準URLの永続化 ----
+// MV3 の service worker はアイドルで停止しメモリ状態が消えるため、
+// lockedUrl を chrome.storage.session に保存する（ブラウザ終了でクリア）。
+// これがないと、SW 再起動直後のクリックが「固定対象でない」と誤判定され
+// 固定タブ内で遷移が素通りするレースが起きる。
+function persistLocked() {
+  const obj = {};
+  for (const [id, url] of lockedUrl) obj[id] = url;
+  chrome.storage.session.set({ lockedUrl: obj });
+}
+
+function setLocked(tabId, url) {
+  lockedUrl.set(tabId, url);
+  persistLocked();
+}
+
+function deleteLocked(tabId) {
+  if (lockedUrl.delete(tabId)) persistLocked();
+}
+
 function setBaseFromTab(tab) {
   if (tab && tab.pinned && isHttp(tab.url)) {
-    lockedUrl.set(tab.id, tab.url);
+    setLocked(tab.id, tab.url);
   }
 }
 
-function initAll() {
-  chrome.tabs.query({}, (tabs) => {
-    for (const t of tabs) setBaseFromTab(t);
+// SW 起動時の復元: storage.session から読み込み、
+// 保存がないピン留めタブは現在の URL から補完する。
+// 各イベントハンドラはこの ready を待ってから判定する。
+const ready = (async () => {
+  try {
+    const st = await chrome.storage.session.get("lockedUrl");
+    const saved = (st && st.lockedUrl) || {};
+    for (const [k, v] of Object.entries(saved)) {
+      if (isHttp(v)) lockedUrl.set(Number(k), v);
+    }
+  } catch (_) {
+    // storage が使えない環境でもメモリのみで動作継続
+  }
+  await new Promise((resolve) => {
+    chrome.tabs.query({}, (tabs) => {
+      for (const t of tabs) {
+        // 保存済みの基準を現在URLで上書きしない（保存の方が正確）
+        if (!lockedUrl.has(t.id)) setBaseFromTab(t);
+      }
+      resolve();
+    });
   });
-}
-chrome.runtime.onInstalled.addListener(initAll);
-chrome.runtime.onStartup.addListener(initAll);
-initAll(); // SW 再生成（拡張の再読み込み含む）のたびに必ず実行
+})();
 
 // ピン留め切替を追従し、content.js にも通知する
 chrome.tabs.onUpdated.addListener((tabId, info, tab) => {
   if (info.pinned === true) {
     setBaseFromTab(tab);
   } else if (info.pinned === false) {
-    lockedUrl.delete(tabId);
+    deleteLocked(tabId);
   }
   if (typeof info.pinned === "boolean") {
     chrome.tabs.sendMessage(tabId, { type: "pinnedChanged", pinned: info.pinned }, () => {
@@ -58,15 +107,21 @@ chrome.tabs.onUpdated.addListener((tabId, info, tab) => {
 });
 
 chrome.tabs.onRemoved.addListener((tabId) => {
-  lockedUrl.delete(tabId);
+  deleteLocked(tabId);
   ownCreatedTabs.delete(tabId);
   restoring.delete(tabId);
+  lastBounce.delete(tabId);
+  typedAllow.delete(tabId);
 });
 
+// 「同一ページ」判定。ハッシュルーティング SPA（EMA 等）では
+// ハッシュ部分がページに相当するため、単純な pathname 比較では
+// /#/endpoints と /# が同一扱いになってしまう。routeOf で正規化して比較する。
+// クエリ差や #section のような通常のアンカー差は同一ページのまま。
 function isSamePage(a, b) {
   try {
     const ua = new URL(a), ub = new URL(b);
-    return ua.origin === ub.origin && ua.pathname === ub.pathname;
+    return ua.origin === ub.origin && routeOf(a) === routeOf(b);
   } catch (_) {
     return false;
   }
@@ -82,7 +137,10 @@ function routeOf(u) {
   const x = new URL(u);
   let p = x.pathname.replace(/\/+$/, "");
   if (x.hash.startsWith("#/")) {
-    p += x.hash.slice(1).replace(/\/+$/, "");
+    // ハッシュルーティングではクエリもハッシュ内に入る（#/route?query）ため、
+    // "?" 以降を切り落としてルート部分だけを比較対象にする
+    const hashRoute = x.hash.slice(1).split("?")[0];
+    p += hashRoute.replace(/\/+$/, "");
   }
   return p || "/";
 }
@@ -113,22 +171,33 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
 
   if (msg.type === "linkClick") {
-    const tabId = sender.tab.id;
-    const base = lockedUrl.get(tabId);
-    const target = msg.href;
+    (async () => {
+      await ready; // SW 再起動直後は基準URLの復元完了を待つ
 
-    // 固定対象でない / 同一ページ（クエリ・ハッシュ差）/ 基準配下への深掘り
-    // → 固定タブ内で通常遷移させる
-    if (!base || !isHttp(target) || isSamePage(base, target) || isChildUrl(base, target)) {
-      sendResponse({ handled: false });
-      return;
-    }
+      const tabId = sender.tab.id;
+      let base = lockedUrl.get(tabId);
+      const target = msg.href;
 
-    // 別ページ → 新規タブで開く。固定タブ側は遷移していないので差し戻し不要
-    chrome.tabs.create({ url: target, active: true, openerTabId: tabId }, (newTab) => {
-      if (newTab) ownCreatedTabs.add(newTab.id);
-      sendResponse({ handled: true });
-    });
+      // SW 再起動等で基準が未登録でも、送信元タブがピン留めなら
+      // 現時点のタブURL（クリック時点＝遷移前なので基準そのもの）を採用する
+      if (!base && sender.tab.pinned && isHttp(sender.tab.url)) {
+        base = sender.tab.url;
+        setLocked(tabId, base);
+      }
+
+      // 固定対象でない / 同一ページ（クエリ・ハッシュ差）/ 基準配下への深掘り
+      // → 固定タブ内で通常遷移させる
+      if (!base || !isHttp(target) || isSamePage(base, target) || isChildUrl(base, target)) {
+        sendResponse({ handled: false });
+        return;
+      }
+
+      // 別ページ → 新規タブで開く。固定タブ側は遷移していないので差し戻し不要
+      chrome.tabs.create({ url: target, active: true, openerTabId: tabId }, (newTab) => {
+        if (newTab) ownCreatedTabs.add(newTab.id);
+        sendResponse({ handled: true });
+      });
+    })();
     return true; // 非同期で sendResponse するため
   }
 });
@@ -141,6 +210,12 @@ function bounceNavigation(tabId, target) {
   if (!isHttp(target)) return;
   if (isSamePage(base, target)) return; // 同一ページ内（クエリ/ハッシュ差）は許可
   if (isChildUrl(base, target)) return; // 基準配下への深掘り（EMA の詳細画面等）は許可
+
+  // クールダウン: 直近にバウンスしたばかりのタブは再バウンスしない。
+  // SPA ルーターとの相互応酬による無限タブ増殖を構造的に断ち切る安全弁。
+  const now = Date.now();
+  if (now - (lastBounce.get(tabId) || 0) < 1500) return;
+  lastBounce.set(tabId, now);
 
   // 別ページ遷移 → 新規タブで開き、元タブは基準URLへ差し戻す
   chrome.tabs.create({ url: target, active: true, openerTabId: tabId }, (newTab) => {
@@ -162,24 +237,13 @@ function bounceNavigation(tabId, target) {
   });
 }
 
-chrome.webNavigation.onCommitted.addListener((details) => {
+chrome.webNavigation.onCommitted.addListener(async (details) => {
   if (details.frameId !== 0) return; // メインフレームのみ
+  await ready;
   const tabId = details.tabId;
 
-  // 差し戻しによる遷移は最優先で無視
-  // （tabs.update が "typed" 扱いになる環境があるため typed 判定より前に置く）
-  if (restoring.has(tabId)) {
-    restoring.delete(tabId);
-    // goBack で戻った先が基準ページとずれていた場合のみ、直接差し戻す
-    const base = lockedUrl.get(tabId);
-    if (base && isHttp(details.url) && !isSamePage(base, details.url)) {
-      markRestoring(tabId);
-      chrome.tabs.update(tabId, { url: base }, () => {
-        if (chrome.runtime.lastError) restoring.delete(tabId);
-      });
-    }
-    return;
-  }
+  // 差し戻し猶予中の遷移はすべて無視（時間窓方式）
+  if (isRestoring(tabId)) return;
 
   // 自作の新規タブの初回遷移は無視
   if (ownCreatedTabs.has(tabId)) {
@@ -189,14 +253,27 @@ chrome.webNavigation.onCommitted.addListener((details) => {
 
   if (!lockedUrl.has(tabId)) return;
 
+  const quals = Array.isArray(details.transitionQualifiers)
+    ? details.transitionQualifiers
+    : [];
+
   // アドレスバー直接入力は基準URLの更新として許可（差し戻さない = リロードなし）。
   // 注意: ブックマークバーのクリックも transitionType が "typed" になる場合があるため、
   // 実際にアドレスバーを経由した証拠である "from_address_bar" 修飾子を必須にする。
-  const fromAddressBar =
-    Array.isArray(details.transitionQualifiers) &&
-    details.transitionQualifiers.includes("from_address_bar");
-  if (details.transitionType === "typed" && fromAddressBar && isHttp(details.url)) {
-    lockedUrl.set(tabId, details.url);
+  if (details.transitionType === "typed" && quals.includes("from_address_bar") && isHttp(details.url)) {
+    setLocked(tabId, details.url);
+    typedAllow.set(tabId, Date.now());
+    return;
+  }
+
+  // typed 直後のリダイレクト（例: Confluence の /SYS → /SYS/overview）は
+  // 入力遷移の続きなので、リダイレクト先を基準URLとして引き継ぐ
+  if (
+    (quals.includes("server_redirect") || quals.includes("client_redirect")) &&
+    Date.now() - (typedAllow.get(tabId) || 0) < 3000 &&
+    isHttp(details.url)
+  ) {
+    setLocked(tabId, details.url);
     return;
   }
 
@@ -205,13 +282,21 @@ chrome.webNavigation.onCommitted.addListener((details) => {
 
 // SPA のクライアントサイド遷移（history.pushState 等）
 // ShotGrid のような SPA のページ切替はこちらで発火する
-chrome.webNavigation.onHistoryStateUpdated.addListener((details) => {
+chrome.webNavigation.onHistoryStateUpdated.addListener(async (details) => {
   if (details.frameId !== 0) return;
-  // goBack による SPA 内の履歴戻りはここにしか来ないため、フラグをここでも消費する
-  if (restoring.has(details.tabId)) {
-    restoring.delete(details.tabId);
-    return;
-  }
+  await ready;
+  // 差し戻し猶予中の SPA イベント（goBack への反応の連発）はすべて無視
+  if (isRestoring(details.tabId)) return;
+  bounceNavigation(details.tabId, details.url);
+});
+
+// ハッシュのみの遷移（/#/endpoints → /# など）は onCommitted にも
+// onHistoryStateUpdated にも来ず、このイベントで発火する。
+// ハッシュルーティング SPA（EMA 等）のルート変更を取りこぼさないために必要。
+chrome.webNavigation.onReferenceFragmentUpdated.addListener(async (details) => {
+  if (details.frameId !== 0) return;
+  await ready;
+  if (isRestoring(details.tabId)) return;
   bounceNavigation(details.tabId, details.url);
 });
 

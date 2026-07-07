@@ -37,6 +37,15 @@ window.addEventListener(
     const a = e.target.closest("a[href]");
     if (!a) return;
 
+    // 生の href 属性が "#" 始まり（または空）のアンカーは、
+    // JS がクリックを処理する前提のボタンか同一ドキュメント内の遷移。
+    // 例: EMA の一覧行は <a href="#"> で、実遷移は EMA の JS が行う。
+    // ここで横取りするとページの機能自体を壊すので一切触らない。
+    // 遷移した結果どこへ行くかは background 側
+    // （onReferenceFragmentUpdated + 同一/子/別ページ判定）が監視する。
+    const rawHref = a.getAttribute("href") || "";
+    if (rawHref === "" || rawHref.startsWith("#")) return;
+
     // パネルやメニューの開閉トグルとして使われる <a> は対象外。
     // （万一本当に遷移した場合は webNavigation 側のフォールバックが拾う）
     if (
@@ -55,9 +64,12 @@ window.addEventListener(
     if (!href) return;
     if (href.startsWith("javascript:")) return;
 
-    // 同一ページ内アンカー（#section）はそのまま
+    // 同一ページ内アンカー（#section）はそのまま。
+    // ただし "#/..." はハッシュルーティング SPA のページ切替なので
+    // アンカー扱いせず、background に同一/子/別ページの判断を委ねる。
     const hashOnly =
       a.hash &&
+      !a.hash.startsWith("#/") &&
       a.origin === location.origin &&
       a.pathname === location.pathname &&
       a.search === location.search;
