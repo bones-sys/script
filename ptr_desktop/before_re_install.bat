@@ -26,4 +26,13 @@ echo --------------------------------------------
 echo.
 echo.
 
+echo --------------------------------------------
+echo パスを脅威の保護の対象から除外中です...
+
+powershell Add-MpPreference -ExclusionPath 'C:\Program Files\Shotgun'
+
+echo --------------------------------------------
+echo.
+echo.
+
 timeout /t 2 /nobreak >nul
