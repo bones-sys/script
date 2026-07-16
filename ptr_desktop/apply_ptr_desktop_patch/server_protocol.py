@@ -354,9 +354,34 @@ class ServerProtocol(WebSocketServerProtocol):
             # Ask for the secret for this server id.
             shotgun = sgtk.platform.current_bundle().shotgun
             # FIXME: Make this method public on the Shotgun API.
-            response = shotgun._call_rpc(
-                "retrieve_ws_server_secret", {"ws_server_id": self.factory.ws_server_id}
-            )
+            # BONES-PATCH: Retry on stale keep-alive connections (WinError
+            # 10053). Idle HTTPS connections to the PTR site are silently
+            # dropped; close the cached connection and retry with a fresh
+            # socket. Same rationale as the api_v2.py patch.
+            _last_exc = None
+            for _attempt in range(3):
+                try:
+                    response = shotgun._call_rpc(
+                        "retrieve_ws_server_secret",
+                        {"ws_server_id": self.factory.ws_server_id},
+                    )
+                    _last_exc = None
+                    break
+                except (ConnectionError, OSError) as e:
+                    _last_exc = e
+                    logger.warning(
+                        "BONES-PATCH: connection error in "
+                        "_retrieve_server_secret (attempt %s/3): %s. "
+                        "Closing cached connection and retrying.",
+                        _attempt + 1,
+                        e,
+                    )
+                    try:
+                        shotgun.close()
+                    except Exception:
+                        pass
+            if _last_exc is not None:
+                raise _last_exc
             ws_server_secret = response["ws_server_secret"]
             ws_server_secret = (
                 response["ws_server_secret"].decode("utf-8")
