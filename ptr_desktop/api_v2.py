@@ -354,8 +354,33 @@ class ShotgunAPI(object):
         # if there was some kind of unhandled exception that there is a proper
         # reply to the client so that the Promise can be kept or broken, as is
         # appropriate.
+        # BONES-PATCH: Retry on stale keep-alive connections (WinError 10053).
+        # Idle HTTPS connections to the PTR site are silently dropped by the
+        # firewall; the Py3.11 bundle recovered silently, but the Py3.13
+        # bundle surfaces ConnectionAbortedError. We close the cached
+        # connection and retry so a fresh socket is used.
         try:
-            self._get_actions(data)
+            _last_exc = None
+            for _attempt in range(3):
+                try:
+                    self._get_actions(data)
+                    _last_exc = None
+                    break
+                except (ConnectionError, OSError) as e:
+                    _last_exc = e
+                    logger.warning(
+                        "BONES-PATCH: connection error in _get_actions "
+                        "(attempt %s/3): %s. Closing cached connection and "
+                        "retrying.",
+                        _attempt + 1,
+                        e,
+                    )
+                    try:
+                        self._engine.shotgun.close()
+                    except Exception:
+                        pass
+            if _last_exc is not None:
+                raise _last_exc
         except Exception:
             self.host.reply(
                 dict(
