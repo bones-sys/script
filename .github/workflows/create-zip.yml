@@ -50,20 +50,18 @@ jobs:
               # 出力先フォルダを作成
               mkdir -p "zip/$dir_name"
 
-              # 1. サブフォルダごとのzip（再帰）
+              # 1. 直下のサブフォルダごとのzip（サブフォルダ内は構造ごと圧縮）
               while IFS= read -r sub_dir; do
                 rel="${sub_dir#${dir_name}/}"
-                zip_name="${rel//\//__}.zip"
-                (cd "$dir_name" && zip -r "../zip/$dir_name/$zip_name" "$rel")
-              done < <(find "$dir_name" -mindepth 1 -type d)
+                (cd "$dir_name" && zip -r "../zip/$dir_name/${rel}.zip" "$rel")
+              done < <(find "$dir_name" -mindepth 1 -maxdepth 1 -type d)
 
-              # 2. 個別ファイルのzip（再帰）
+              # 2. 直下の個別ファイルのzip
               while IFS= read -r file_path; do
                 rel_path="${file_path#${dir_name}/}"
                 base_path="${rel_path%.*}"
-                zip_name="${base_path//\//__}.zip"
-                zip -j "zip/$dir_name/$zip_name" "$file_path"
-              done < <(find "$dir_name" -type f)
+                zip -j "zip/$dir_name/${base_path}.zip" "$file_path"
+              done < <(find "$dir_name" -mindepth 1 -maxdepth 1 -type f)
 
             else
               echo "No files in: $dir_name"
