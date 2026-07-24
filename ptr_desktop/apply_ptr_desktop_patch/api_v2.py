@@ -1422,20 +1422,49 @@ class ShotgunAPI(object):
 
         project_cache = self._cache.setdefault(self.ENTITY_PARENT_PROJECTS, dict())
 
+        # BONES-PATCH: _get_actions と同様、stale keep-alive connection
+        # (WinError 10053 / ConnectionAbortedError) を踏んだら cached
+        # connection を閉じて張り直しリトライする。
+        # あわせて 2 点変更:
+        #  - 従来の bare except を廃止 (接続断が project=None に化け、
+        #    呼び出し側で "Unable to determine a project entity" として
+        #    落ちていた)。
+        #  - lookup 失敗時は cache に焼かない (poisoned cache 対策)。
+        #    従来は失敗の None を登録し、接続回復後もプロセス再起動まで
+        #    同一 entity が None を返し続けていた。
         if entity["id"] not in project_cache:
-            project = None
-            try:
-                sg_entity = self._engine.shotgun.find_one(
-                    entity["type"],
-                    [["id", "is", entity["id"]]],
-                    fields=["project"],
-                )
-            except Exception:
-                pass
-            else:
-                project = sg_entity["project"]
+            sg_entity = None
+            for _attempt in range(3):
+                try:
+                    sg_entity = self._engine.shotgun.find_one(
+                        entity["type"],
+                        [["id", "is", entity["id"]]],
+                        fields=["project"],
+                    )
+                    break
+                except (ConnectionError, OSError) as e:
+                    logger.warning(
+                        "BONES-PATCH: connection error in "
+                        "_get_entity_parent_project (attempt %s/3): %s. "
+                        "Closing cached connection and retrying.",
+                        _attempt + 1,
+                        e,
+                    )
+                    try:
+                        self._engine.shotgun.close()
+                    except Exception:
+                        pass
 
-            project_cache[entity["id"]] = project
+            # 全リトライが接続断で失敗した場合。None を返すのみで cache せず、
+            # 次回呼び出しで再試行できる状態を維持する。呼び出し側
+            # (_get_entities_from_payload) が RuntimeError を送出する。
+            if sg_entity is None:
+                return None
+
+            # lookup 成功。project が本当に無いケース (None) はここで確定なので
+            # cache する。
+            project_cache[entity["id"]] = sg_entity["project"]
+
         return project_cache[entity["id"]]
 
     @sgtk.LogManager.log_timing
