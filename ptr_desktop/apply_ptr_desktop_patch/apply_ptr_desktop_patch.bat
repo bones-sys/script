@@ -2,7 +2,7 @@
 chcp 65001 >nul
 
 rem ============================================================
-rem  FPT Desktop パッチ適用バッチ (BONES-PATCH v2)
+rem  PTR Desktop パッチ適用バッチ (BONES-PATCH v2)
 rem  対象: api_v2.py / server_protocol.py (tk-framework-desktopserver v1.8.7)
 rem  ・管理者権限へ自動昇格
 rem  ・既存ファイルを .bak にリネームしてバックアップ
@@ -20,13 +20,13 @@ if NOT "%LEVEL%"=="High" (
 set "FWDIR=C:\Program Files\Shotgun\Resources\Desktop\Python\bundle_cache\app_store\tk-framework-desktopserver\v1.8.7\python\tk_framework_desktopserver"
 
 echo.
-echo === FPT Desktop パッチ適用 (api_v2.py / server_protocol.py) ===
+echo === PTR Desktop パッチ適用 (api_v2.py / server_protocol.py) ===
 echo.
 
-rem --- FPT Desktop 起動中チェック ---
+rem --- PTR Desktop 起動中チェック ---
 tasklist /FI "IMAGENAME eq Shotgun.exe" | find /I "Shotgun.exe" >nul
 if %errorlevel%==0 (
-    echo [警告] FPT Desktop ^(Shotgun.exe^) が起動中です。
+    echo [警告] PTR Desktop ^(Shotgun.exe^) が起動中です。
     echo タスクトレイから終了してから、このbatを再実行してください。
     goto :fail
 )
@@ -49,7 +49,7 @@ if exist "%FWDIR%\shotgun\__pycache__"  rd /S /Q "%FWDIR%\shotgun\__pycache__"
 echo [OK] __pycache__ を削除しました。
 
 echo.
-echo === 完了しました。FPT Desktop を起動して動作確認してください ===
+echo === 完了しました。PTR Desktop を起動して動作確認してください ===
 echo.
 pause
 exit /b 0
