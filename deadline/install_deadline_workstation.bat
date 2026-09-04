@@ -146,6 +146,15 @@ netsh interface ip set address name=%NETWORK_ADAPTER_NAME% static %IP_ADDRESS% %
 netsh interface ip set dns name=%NETWORK_ADAPTER_NAME% static %DNS%
 netsh interface ip add dns name=%NETWORK_ADAPTER_NAME% %ALT_DNS% index=2
 
+REM --- Static routes to core segments via L3 switch (bypass SonicWall hairpin) ---
+REM Static-IP hosts do not receive DHCP Option 121, so persistent routes are added here.
+set L3_GW=192.168.33.1
+echo Adding static routes via %L3_GW% ...
+route delete 192.168.30.0 mask 255.255.255.0 >nul 2>&1
+route add 192.168.30.0 mask 255.255.255.0 %L3_GW% -p
+route delete 192.168.61.61 mask 255.255.255.255 >nul 2>&1
+route add 192.168.61.61 mask 255.255.255.255 %L3_GW% -p
+
 REM 完了メッセージ
 echo IPアドレスが %IP_ADDRESS% に設定されました。
 echo --------------------------------------------
