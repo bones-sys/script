@@ -7,12 +7,19 @@ setlocal enabledelayedexpansion
 ::   2. Back up PersistentRoutes registry key and current route table
 ::   3. Delete ALL persistent routes (including stale per-segment routes)
 ::   4. Set static IP / mask / gateway / DNS with netsh
+::   5. Add one persistent route for the whole internal 192.168.0.0/16
+::      space via the L3 switch
 ::
-::   The default gateway is the L3 switch (192.168.33.1), which routes
-::   inter-site traffic directly and forwards Internet-bound traffic to
-::   the SonicWall (192.168.33.254). Per-segment persistent routes are
-::   therefore no longer required and are removed by this script.
-::   The SonicWall management UI stays reachable at https://192.168.33.254
+::   This mirrors what the SonicWall DHCP scope now hands out:
+::     0.0.0.0/0       -> 192.168.33.254  (SonicWall, Internet)
+::     192.168.0.0/16  -> 192.168.33.1    (L3 switch, inter-site)
+::
+::   Internet traffic goes straight to the SonicWall. Routing it through
+::   the L3 switch caused intermittent connection failures in browsers
+::   and desktop apps, so it is kept off that path.
+::   The /16 route covers 30, 61, 80, 112 and 113 in a single entry. The
+::   local 192.168.33.0/24 is unaffected: the on-link route for the own
+::   subnet is more specific and always wins.
 ::-----------------------------------------
 
 ::-----------------------------------------
@@ -29,14 +36,15 @@ echo.
 
 ::-----------------------------------------
 :: Network parameters
-::   GATEWAY was 192.168.33.254 (SonicWall) before the L3 switch cutover.
-::   It is now 192.168.33.1 (L3 switch) to match the DHCP clients.
 ::-----------------------------------------
 set IP_PREFIX=192.168.33
 set SUBNET_MASK=255.255.255.0
-set GATEWAY=192.168.33.1
+set GATEWAY=192.168.33.254
 set DNS=192.168.30.60
 set ALT_DNS=192.168.30.70
+set L3_GW=192.168.33.1
+set INTERNAL_NET=192.168.0.0
+set INTERNAL_MASK=255.255.0.0
 set REGKEY=HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\PersistentRoutes
 
 ::-----------------------------------------
@@ -84,9 +92,9 @@ echo ===== Planned network settings =====
 echo   Hostname : %COMPUTERNAME%
 echo   ifIndex  : %IFINDEX%
 echo   IP       : %IP_ADDRESS% / %SUBNET_MASK%
-echo   Gateway  : %GATEWAY%  (L3 switch)
+echo   Gateway  : %GATEWAY%  (SonicWall, Internet)
 echo   DNS      : %DNS%, %ALT_DNS%
-echo   Routes   : none. Inter-site traffic follows the default gateway.
+echo   Route    : %INTERNAL_NET%/16 via %L3_GW% (L3 switch, persistent)
 echo.
 echo   All existing persistent routes will be backed up and then removed.
 echo.
@@ -132,10 +140,10 @@ echo.
 :: Delete every persistent route. Only value lines are processed:
 :: they always end with the REG_SZ type, while the key header line
 :: printed by reg query does not.
-:: This clears the old per-segment routes (192.168.30.0/24 and
-:: 192.168.61.61/32 via the L3 switch) that this script used to add,
-:: as well as any stale default route. They are not re-added: the
-:: default gateway now points at the L3 switch and covers both.
+:: This clears entries left by earlier revisions of this script: the
+:: per-segment routes to 192.168.30.0/24 and 192.168.61.61/32, and any
+:: stale default route. A stale persistent 0.0.0.0 entry would survive
+:: the gateway change below and produce a duplicate default route.
 ::-----------------------------------------
 echo Deleting all persistent routes...
 set DELCOUNT=0
@@ -179,12 +187,19 @@ echo   Applied: %IP_ADDRESS%
 echo.
 
 ::-----------------------------------------
+:: Persistent route to the internal address space via the L3 switch
+::-----------------------------------------
+echo Adding persistent route %INTERNAL_NET%/16 via %L3_GW% ...
+route add %INTERNAL_NET% mask %INTERNAL_MASK% %L3_GW% -p
+echo.
+
+::-----------------------------------------
 :: Verify
 ::-----------------------------------------
-echo ===== Default route =====
-route print -4 | findstr /c:"0.0.0.0"
+echo ===== Active routes of interest =====
+route print -4 | findstr /c:"0.0.0.0" /c:"192.168.0.0"
 echo.
-echo ===== Persistent routes (after, should be empty) =====
+echo ===== Persistent routes (after) =====
 reg query "%REGKEY%" 2>nul
 echo.
 echo ===== DNS servers =====
@@ -192,46 +207,55 @@ netsh interface ipv4 show dnsservers name=%IFINDEX%
 echo.
 
 ::-----------------------------------------
-:: Reachability check. The default gateway must answer, and the core
-:: segment must be reachable through it now that the explicit route
-:: is gone. 192.168.33.254 is checked as well because the SonicWall
-:: management UI is accessed directly at that address.
+:: Reachability check.
+::   GATEWAY : Internet path and SonicWall management UI
+::   L3_GW   : next hop for the internal /16 route
+::   DNS     : core segment host reached through that route
 ::-----------------------------------------
 echo ===== Reachability =====
 set NGFAIL=0
 
 ping -n 2 %GATEWAY% >nul 2>&1
 if errorlevel 1 (
-    echo   [WARN] Gateway %GATEWAY% did not respond.
+    echo   [WARN] SonicWall %GATEWAY% did not respond.
     set NGFAIL=1
 ) else (
-    echo   [OK]   Gateway %GATEWAY%
+    echo   [OK]   SonicWall %GATEWAY%
+)
+
+ping -n 2 %L3_GW% >nul 2>&1
+if errorlevel 1 (
+    echo   [WARN] L3 switch %L3_GW% did not respond.
+    set NGFAIL=1
+) else (
+    echo   [OK]   L3 switch %L3_GW%
 )
 
 ping -n 2 %DNS% >nul 2>&1
 if errorlevel 1 (
     echo   [WARN] Core segment host %DNS% did not respond.
-    echo          Check that the L3 switch routes 192.168.30.0/24.
+    echo          Check the %INTERNAL_NET%/16 route and the L3 switch.
     set NGFAIL=1
 ) else (
     echo   [OK]   Core segment %DNS%
 )
+echo.
 
-ping -n 2 192.168.33.254 >nul 2>&1
-if errorlevel 1 (
-    echo   [WARN] SonicWall 192.168.33.254 did not respond.
+set MISSING=0
+route print -4 | findstr /c:"192.168.0.0" >nul || set MISSING=1
+if "%MISSING%"=="1" (
+    echo   [WARN] Route to %INTERNAL_NET%/16 was NOT found.
     set NGFAIL=1
 ) else (
-    echo   [OK]   SonicWall 192.168.33.254
+    echo   [OK]   Route to %INTERNAL_NET%/16 is present.
 )
 echo.
 
 if "%NGFAIL%"=="1" (
     echo [WARN] One or more checks failed.
-    echo        To roll back: double-click "%REGBK%" then reboot,
-    echo        or re-run this script with GATEWAY set to 192.168.33.254.
+    echo        To roll back: double-click "%REGBK%" then reboot.
 ) else (
-    echo [OK] All reachability checks passed.
+    echo [OK] All checks passed.
 )
 echo.
 echo Done. IP address set to %IP_ADDRESS%.
