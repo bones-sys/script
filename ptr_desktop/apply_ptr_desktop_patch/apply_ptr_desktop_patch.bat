@@ -3,7 +3,7 @@ chcp 65001 >nul
 
 rem ============================================================
 rem  PTR Desktop パッチ適用バッチ (BONES-PATCH v2)
-rem  対象: api_v2.py / server_protocol.py (tk-framework-desktopserver v1.8.7)
+rem  対象: api_v2.py / server_protocol.py (tk-framework-desktopserver v1.8.8)
 rem  ・管理者権限へ自動昇格
 rem  ・既存ファイルを .bak にリネームしてバックアップ
 rem  ・batと同じフォルダのパッチ済みファイルを配置
@@ -17,7 +17,7 @@ if NOT "%LEVEL%"=="High" (
     exit
 )
 
-set "FWDIR=C:\Program Files\Shotgun\Resources\Desktop\Python\bundle_cache\app_store\tk-framework-desktopserver\v1.8.7\python\tk_framework_desktopserver"
+set "FWDIR=C:\Program Files\Shotgun\Resources\Desktop\Python\bundle_cache\app_store\tk-framework-desktopserver\v1.8.8\python\tk_framework_desktopserver"
 
 echo.
 echo === PTR Desktop パッチ適用 (api_v2.py / server_protocol.py) ===
@@ -69,7 +69,7 @@ if not exist "%SRC%" (
 )
 if not exist "%DST%" (
     echo [エラー] 置き換え対象が見つかりません: %DST%
-    echo         v1.8.7 以外のバージョンの可能性があります。
+    echo         v1.8.8 以外のバージョンの可能性があります。
     set "FAILED=1"
     goto :eof
 )
