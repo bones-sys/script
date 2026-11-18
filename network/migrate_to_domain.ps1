@@ -191,6 +191,10 @@ try {
     Assert-Elevated
     "Phase: $Phase   Running as: $(Me)   Computer: $env:COMPUTERNAME   DryRun: $DryRun"
 
+    # このファイル自体がBOM付きか確認（BOMが無いとPowerShell 5.1で日本語コメントが化ける）
+    if (([IO.File]::ReadAllBytes($PSCommandPath)[0..2] -join ',') -eq '239,187,191') { Ok 'script file: UTF-8 with BOM' }
+    else { Warn 'script file has NO UTF-8 BOM. Re-save it as "UTF-8 with BOM".' }
+
     switch ($Phase) {
 
         # ===== Check: 確認のみ。何も変更しない =====
